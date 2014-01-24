@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" method="upgrade" group="donorcart">
+	<name>Donorcart - Free Checkout</name>
+	<author>Mango Tree Media</author>
+	<creationDate>May 2013</creationDate>
+	<copyright>(C) 2013 Mango Tree Media LLC. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later</license>
+	<authorEmail>tech@mangotreemedia.com</authorEmail>
+	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<version>0.1.0</version>
+	<description>Allows users to checkout in donorcart without paying anything.</description>
+
+	<files>
+		<filename plugin="donorcartfree">donorcartfree.php</filename>
+		<filename>index.html</filename>
+	</files>
+</extension>

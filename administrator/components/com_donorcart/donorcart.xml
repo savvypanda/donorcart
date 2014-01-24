@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="2.5.0" method="upgrade">
+	<name>Donor Cart</name>
+	<creationDate>June 2013</creationDate>
+	<author>Levi Carter</author>
+	<authorEmail>levi@mangotreemedia.com</authorEmail>
+	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<copyright></copyright>
+	<license></license>
+	<version>0.1.5</version>
+	<description>Provides a simple method to add items to a shopping cart and to checkout using a payment gateway of your choice.</description>
+
+	<scriptfile>script.donorcart.php</scriptfile>
+	<install><sql><file driver="mysql" charset="utf8">sql/install.donorcart.mysql.sql</file></sql></install>
+	<uninstall><sql><file driver="mysql" charset="utf8">sql/uninstall.donorcart.mysql.sql</file></sql></uninstall>
+	<update><schemas><schemapath type="mysql">sql/updates/mysql</schemapath></schemas></update>
+
+	<media destination="com_donorcart" folder="media">
+		<filename>index.html</filename>
+		<filename>dcart-javascript.js</filename>
+		<filename>donorcart.js</filename>
+		<filename>donorcart.css</filename>
+		<filename>jquery-ui-1.10.3.js</filename>
+		<filename>jquery-ui-1.10.3.css</filename>
+		<folder>images</folder>
+	</media>
+
+	<files folder="site">
+		<filename>index.html</filename>
+		<filename>dispatcher.php</filename>
+		<filename>donorcart.php</filename>
+		<folder>controllers</folder>
+		<folder>models</folder>
+		<folder>views</folder>
+		<folder>language</folder>
+	</files>
+
+	<languages folder="site">
+		<language tag="en-GB">language/en-GB/en-GB.com_donorcart.ini</language>
+	</languages>
+
+	<media destination="com_donorcart" folder="media">
+		<folder>images</folder>
+		<filename>donorcart.css</filename>
+		<filename>donorcart.js</filename>
+		<filename>dcart-javascript.js</filename>
+		<filename>index.html</filename>
+	</media>
+	
+	<administration>
+		<menu img="../media/com_donorcart/images/donorcart_16x16.png">DonorCart</menu>
+		<files folder="admin">
+			<filename>index.html</filename>
+			<filename>config.xml</filename>
+			<filename>access.xml</filename>
+			<filename>donorcart.php</filename>
+			<filename>dispatcher.php</filename>
+			<filename>toolbar.php</filename>
+			<folder>helpers</folder>
+			<folder>views</folder>
+			<folder>models</folder>
+			<folder>sql</folder>
+			<folder>language</folder>
+		</files>
+
+		<languages folder="admin">
+			<language tag="en-GB">language/en-GB/en-GB.com_donorcart.ini</language>
+			<language tag="en-GB">language/en-GB/en-GB.com_donorcart.sys.ini</language>
+		</languages>
+	</administration>
+</extension>

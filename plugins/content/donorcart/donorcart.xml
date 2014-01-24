@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" version="2.5" group="content" method="upgrade">
+	<name>Content - Donorcart</name>
+	<creationDate>May 2013</creationDate>
+	<author>Levi Carter</author>
+	<authorEmail>levi@mangotreemedia.com</authorEmail>
+	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<copyright></copyright>
+	<license></license>
+	<version>0.1.4</version>
+	<description><![CDATA[
+		<p>Automatically generates add-to-cart forms from content with the syntax: {donorcart-add-to-cart [params]}<br />
+		Possible Parameters are:</p>
+		<ul>
+			<li>title="title" (optional, translatable)</li>
+			<li>sku="item SKU" (required)</li>
+			<li>name="item Name" (optional - if left blank, item name will be editable)</li>
+			<li>qty="x" (optional - if left blank, item quantity will default to 1 and be editable)</li>
+			<li>price="x.xx" (optional - if left blank, item price will be editable and item qty will be forced to 1)</li>
+			<li>url="http://x.com" (optional)</li>
+			<li>img="/path/to/image.jpg" (optional) - an image to display on the form</li>
+			<li>submitlabel="Give" (optional, translatable - if left blank, will default to "Give")</li>
+			<li>priceoptions="5,10,20,50" (optional - if left blank the form will not include any suggested price options)</li>
+			<li>pricelabel="Gift Amount" (optional, translatable - if left blank, will default to "Gift Amount")</li>
+			<li>namelabel="Name Label" (optional, translatable, only applies if editname=1 - if left blank will default to "Name")</li>
+			<li>qtyoptions="5,10,20,50" (optional - if left blank the form will not include any suggested price options)</li>
+			<li>qtylabel="Qty" (optional, translatable - if left blank, will default to "Qty")</li>
+			<li>hidename=1 (optional - specifies that the name should not be displayed on the form)</li>
+			<li>skipprompt=1 (optional - skips the prompt after adding the item to the cart, and goes directly to the checkout page)</li>
+			<li>nameplaceholder=1 (optional - if used the text in the name field will disappear when clicked on for the first time)</li>
+			<li>qtyplaceholder=1 (optional - if used the text in the name field will disappear when clicked on for the first time)</li>
+			<li>priceplaceholder=1 (optional - if used the text in the name field will disappear when clicked on for the first time)</li>
+			<li>hideprice=1 (optional - specifies that the price should not be displayed on the form)</li>
+			<li>hideqty=1 (optional - specifies that the qty should not be displayed on the form)</li>
+			<li>editqty=1 (optional - specifies that the item quantity should be editable)</li>
+			<li>editprice=1 (optional - specifies that the item price should be editable)</li>
+			<li>editname=1 (optional - specifies that the item name should be editable)</li>
+			<li>classname="vanilla" (optional - if included the classname will be added to the form element)</li>
+		</ul>
+		<p>If the parameter value includes any spaces, the quote marks around the value are required, otherwise they are optional.</p>
+		<p>If the name, qty, or price parameters are left blank, the editqty, editprice, and editname parameters will be overwritten as specified above</p>
+		<p><br /></p>
+		<p><strong>Examples:</strong><br />
+			- <em>{donorcart-add-to-cart sku=donation}</em> - this is the minimum required to display a form<br />
+			- <em>{donorcart-add-to-cart sku=BlCl#42 name="Blues Clues" price=4.50 editqty=1}</em> - most common useage<br />
+			- <em>{donorcart-add-to-cart sku=SpecFnd name="Special Fund" classname=special-fund}</em> - allows the user to decide how much to donate and include the "special-fund" class on the form<br />
+			- <em>{donorcart-add-to-cart sku=usrSpec name="Where Most Needed" editname=1}</em> - allow the user to specify where the donation should go, defaulted to "Where Most Needed"<br />
+			- <em>{donorcart-add-to-cart sku=bed.smgr name="Small Green Beds" price=45 qty=100 url="http://mybeds.com/products/small/green.html" editqty=1 classname=greenform}</em> - will display a form for 100 small green beds with a hyperlink to mybeds.com, using the "greenform" classname on the form, and allowing users to edit the quantity of beds they would like to add to their cart.<br />
+		</p>
+		<p>If you notice any bugs, please contact tech@mangotreemedia.com</p>
+	]]>
+	</description>
+	<files>
+		<filename plugin="donorcart">donorcart.php</filename>
+		<filename>index.html</filename>
+	</files>
+</extension>

@@ -1,0 +1,55 @@
+# Ignore everything:
+*
+
+# Do not ignore the .gitignore file
+!.gitignore
+
+# Do not ignore the component or media
+!components/
+!components/*
+!components/com_donorcart/
+!components/com_donorcart/*
+!administrator/
+!administrator/*
+!administrator/components/
+!administrator/components/*
+!administrator/components/com_donorcart/
+!administrator/components/com_donorcart/*
+!media/
+!media/*
+!media/com_donorcart/
+!media/com_donorcart/*
+
+# Do not ignore the module
+!modules/
+!modules/*
+!modules/mod_donorcart/
+!modules/mod_donorcart/*
+
+# Do not ignore our plugins
+!plugins/
+!plugins/*
+!plugins/content/
+!plugins/content/*
+!plugins/content/donorcart/
+!plugins/content/donorcart/*
+!plugins/donorcart/
+!plugins/donorcart/*
+!plugins/donorcart/authorizenet/
+!plugins/donorcart/authorizenet/*
+!plugins/donorcart/authorizenet/anet_php_sdk/
+!plugins/donorcart/authorizenet/anet_php_sdk/*
+!plugins/donorcart/authorizenet/anet_php_sdk/lib/
+!plugins/donorcart/authorizenet/anet_php_sdk/lib/*
+!plugins/donorcart/authorizenet/anet_php_sdk/lib/shared/
+!plugins/donorcart/authorizenet/anet_php_sdk/lib/shared/*
+!plugins/donorcart/authorizenet/anet_php_sdk/lib/ssl/
+!plugins/donorcart/authorizenet/anet_php_sdk/lib/ssl/*
+!plugins/donorcart/donatelinq/
+!plugins/donorcart/donatelinq/*
+!plugins/donorcart/free/
+!plugins/donorcart/free/*
+!plugins/donorcart/sagepay/
+!plugins/donorcart/sagepay/*
+!plugins/donorcart/testhelp/
+!plugins/donorcart/testhelp/*

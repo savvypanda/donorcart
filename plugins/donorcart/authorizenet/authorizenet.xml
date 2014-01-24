@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" method="upgrade" group="donorcart">
+	<name>Donorcart - Authorize.Net Checkout</name>
+	<author>Mango Tree Media</author>
+	<creationDate>June 2013</creationDate>
+	<copyright>(C) 2013 Mango Tree Media LLC. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later</license>
+	<authorEmail>tech@mangotreemedia.com</authorEmail>
+	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<version>0.1.0</version>
+	<description>Allow users to checkout in donorcart through Authorize.net</description>
+
+	<files>
+		<filename plugin="authorizenet">authorizenet.php</filename>
+		<folder>anet_php_sdk</folder>
+		<filename>index.html</filename>
+	</files>
+
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="active" type="list" label="Active" default="0" description="Whether or not to accept new payments through this payment method">
+					<option value="0">Inactive</option>
+					<option value="1">Active</option>
+				</field>
+				<field name="login_id" type="text" size="50" default="" label="Login ID" description="Authorize.net Login ID"/>
+				<field name="transaction_key" type="text" size="50" default="" label="Transaction Key" description="Authorize.net Transaction Key"   />
+				<field name="hash" type="text" size="50" default="" label="API Hash" description="Authorize.net API Hash"/>
+				<field name="mode" type="list" default="test.authorize.net" menu="hide" label="Authorization Mode" description="" >
+					<option value="sandbox" >Sandbox</option>
+					<option value="test">Test</option>
+					<option value="live">Live</option>
+					<!--option value="eProcessingNetwork">eProcessingNetwork</option-->
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

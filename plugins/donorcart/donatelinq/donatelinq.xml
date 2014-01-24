@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" method="upgrade" group="donorcart">
+	<name>Donorcart - DonateLinq Checkout</name>
+	<author>Mango Tree Media</author>
+	<creationDate>May 2013</creationDate>
+	<copyright>(C) 2013 Mango Tree Media LLC. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later</license>
+	<authorEmail>tech@mangotreemedia.com</authorEmail>
+	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<version>0.1.0</version>
+	<description>Allow users to checkout in donorcart through DonateLinq.</description>
+
+	<files>
+		<filename plugin="donatelinq">donatelinq.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+	<config>
+		<fields name="params">
+			<fieldset name="basic" label="Basic" description="Basic">
+				<field name="active" type="list" label="Active" default="0" description="Whether or not to accept new payments through this payment method">
+					<option value="0">Inactive</option>
+					<option value="1">Active</option>
+				</field>
+				<field name="donatelink" type="text" default="https://secure-q.net/Pages/Post" label="Payment URL" description="Your secure checkout page." />
+				<field name="merchant_id" type="text" default="" label="Merchant ID" description="Your DonateLinq merchant ID." />
+				<field name="page_id" type="text" default="" label="Page ID" description="The Page ID in DonateLinq for the payment form you wish to display." />
+				<!--field name="donatelink" type="text" default="https://dlq4.donatelinq.net/qv10/Default.aspx?MerchantID=" label="Payment URL" description="Your secure checkout page." /-->
+				<!--field name="testmode" type="list" default="0" label="Test Mode" description="While in test mode, donatelinq will not process any payments made through it.">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field-->
+			</fieldset>
+			<fieldset name="recurring" label="Recurring Payments" description="Select the allowed automated donation frequencies">
+				<field name="recur_onetime" type="list" default="1" label="Allow One-Time Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_twoweeks" type="list" default="0" label="Allow 2 Weeks Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_weekly" type="list" default="0" label="Allow Weekly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_fourweeks" type="list" default="0" label="Allow 4 Weeks Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_monthly" type="list" default="1" label="Allow Monthly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_querterly" type="list" default="1" label="Allow Quarterly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_semiannual" type="list" default="0" label="Allow Semi-Annual Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_yearly" type="list" default="0" label="Allow Yearly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

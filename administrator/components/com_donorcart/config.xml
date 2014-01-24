@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<fieldset name="basic" label="COM_DONORCART_CONFIG_BASIC_LABEL" description="COM_DONORCART_CONFIG_BASIC_DESC">
+		<field name="testmode" type="list" default="0" label="COM_DONORCART_CONFIG_BASIC_TESTMODE_LABEL" description="COM_DONORCART_CONFIG_BASIC_TESTMODE_DESC">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field name="ssl_mode" type="list" default="0" label="COM_DONORCART_CONFIG_BASIC_SSLMODE_LABEL" description="COM_DONORCART_CONFIG_BASIC_SSLMODE_DESC">
+			<option value="0">JDISABLED</option>
+			<option value="1">JENABLED</option>
+			<option value="2">COM_DONORCART_CONFIG_COMMON_REQUIRED</option>
+		</field>
+		<field name="admin_email" type="text" size="50" default="" label="COM_DONORCART_CONFIG_BASIC_ADMINEMAIL_LABEL" description="COM_DONORCART_CONFIG_BASIC_ADMINEMAIL_DESC" />
+	</fieldset>
+	<fieldset name="checkout" label="COM_DONORCART_CONFIG_CHECKOUT_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_DESC">
+		<field name="login_option" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_ALLOWLOGIN_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_ALLOWLOGIN_DESCRIPTION">
+			<option value="0">COM_DONORCART_CONFIG_COMMON_SKIP</option>
+			<option value="1">COM_DONORCART_CONFIG_COMMON_OPTIONAL</option>
+			<option value="2">COM_DONORCART_CONFIG_COMMON_REQUIRED</option>
+		</field>
+		<field name="require_email_for_guest_checkout" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_REQUIREEMAIL_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_REQUIREEMAIL_DESC">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field name="allow_return_to_login" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_RETURNTOLOGIN_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_RETURNTOLOGIN_DESC">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field name="onestep_checkout" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_ONESTEPCHECKOUT_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_ONESTEPCHECKOUT_DESC">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field name="shipto_option" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_SHIPTOOPTION_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_SHIPTOOPTION_DESC">
+			<option value="0">COM_DONORCART_CONFIG_COMMON_SKIP</option>
+			<option value="1">COM_DONORCART_CONFIG_COMMON_OPTIONAL</option>
+			<option value="2">COM_DONORCART_CONFIG_COMMON_REQUIRED</option>
+		</field>
+		<field name="billto_option" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_BILLTOOPTION_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_BILLTOOPTION_DESC">
+			<option value="0">COM_DONORCART_CONFIG_COMMON_SKIP</option>
+			<option value="1">COM_DONORCART_CONFIG_COMMON_OPTIONAL</option>
+			<option value="2">COM_DONORCART_CONFIG_COMMON_REQUIRED</option>
+		</field>
+		<field name="review_option" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_REVIEWOPTION_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_REVIEWOPTION_DESC">
+			<option value="0">COM_DONORCART_CONFIG_COMMON_SKIP</option>
+			<option value="2">COM_DONORCART_CONFIG_COMMON_REQUIRED</option>
+		</field>
+		<field name="display_cart" type="list" default="1" label="COM_DONORCART_CONFIG_CHECKOUT_DISPLAYCART_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_DISPLAYCART_DESC">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+	</fieldset>
+	<fieldset name="review" label="COM_DONORCART_CONFIG_ORDERREVIEW_LABEL" description="COM_DONORCART_CONFIG_ORDERREVIEW_DESC">
+		<field name="history_pretext" type="textarea" filter="SAFEHTML" default="" label="COM_DONORCART_CONFIG_ORDERREVIEW_PRETEXT_LABEL" description="COM_DONORCART_CONFIG_ORDERREVIEW_PRETEXT_DESC" />
+		<field name="history_posttext" type="textarea" filter="SAFEHTML" default="" label="COM_DONORCART_CONFIG_ORDERREVIEW_POSTTEXT_LABEL" description="COM_DONORCART_CONFIG_ORDERREVIEW_POSTTEXT_DESC" />
+		<field name="detail_pretext" type="textarea" filter="SAFEHTML" default="" label="COM_DONORCART_CONFIG_ORDERREVIEW_DETAILPRETEXT_LABEL" description="COM_DONORCART_CONFIG_ORDERREVIEW_DETAILPRETEXT_DESC" />
+		<field name="detail_posttext" type="textarea" filter="SAFEHTML" default="" label="COM_DONORCART_CONFIG_ORDERREVIEW_DETAILPOSTTEXT_LABEL" description="COM_DONORCART_CONFIG_ORDERREVIEW_DETAILPOSTTEXT_DESC" />
+	</fieldset>
+	<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL" description="JCONFIG_PERMISSIONS_DESC">
+		<field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" class="inputbox" filter="rules" component="com_donorcart" section="component" />
+	</fieldset>
+</config>
