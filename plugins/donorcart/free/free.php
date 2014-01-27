@@ -1,14 +1,14 @@
 <?php defined('_JEXEC') or die('Restricted Access');
 
-class plgDonorcartDonorcartfree extends JPlugin {
+class plgDonorcartFree extends JPlugin {
 
 	public function onBeforePayment($order, $plugin_validated) {
 		if($plugin_validated) return false;
-		$plugin_validated = 'donorcartfree';
+		$plugin_validated = 'free';
 		return true;
 	}
 	public function onPayment($order, $is_valid, $plugin_validated) {
-		if($is_valid && $plugin_validated=='donorcartfree') {
+		if($is_valid && $plugin_validated=='free') {
 			$paymentmodel = FOFModel::getTmpInstance('payment','DonorcartModel');
 			$data = array(
 				'payment_type' => 'free',

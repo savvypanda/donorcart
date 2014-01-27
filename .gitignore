@@ -53,3 +53,14 @@
 !plugins/donorcart/sagepay/*
 !plugins/donorcart/testhelp/
 !plugins/donorcart/testhelp/*
+
+# Ignore index.html and index.php files
+components/index.html
+administrator/index.html
+administrator/index.php
+administrator/components/index.html
+media/index.html
+modules/index.html
+plugins/index.html
+plugins/content/index.html
+plugins/donorcart/index.html

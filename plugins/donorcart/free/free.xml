@@ -11,7 +11,7 @@
 	<description>Allows users to checkout in donorcart without paying anything.</description>
 
 	<files>
-		<filename plugin="donorcartfree">donorcartfree.php</filename>
+		<filename plugin="free">free.php</filename>
 		<filename>index.html</filename>
 	</files>
 </extension>
