@@ -1,43 +1,68 @@
-var dcart_target = '#dcart_target';
-//var dcart_alert_text = "You just added a gift to your cart.\n\nWant to make this a monthly recurring gift? Just select \"Make this an automatic monthly  gift\" during checkout.  Or set up an automatic monthly gift from your checking account (EFT).\n\n\nDo you want to checkout now?";
-var dcart_alert_text = "<p>You just added a gift to your cart.<br /><br />Want to make this a monthly recurring gift? Just select &quot;Make this an automatic monthly  gift&quot; during checkout.";
-
-function dcartLoader(target, postdata, checkout_alert) {
-	jQuery(dcart_target).html('<img src="media/com_donorcart/images/ajax_loading.gif" alt="Loading.." height="16" width="16" align="left" border="0" /> &nbsp; &nbsp; Loading...');
-	if(typeof postdata !== 'undefined' && postdata != false) {
-		settings = {url: target, type: 'POST', data: postdata};
-		jQuery.ajax(settings).done(function(data){
-			jQuery(dcart_target).html(data);
-			if(typeof checkout_alert !== 'undefined' && checkout_alert != false) {
-				if(checkout_alert === 'skip') {
-					jQuery('form[name=dcart_cart]').submit();
-				} else {
-					jQuery('<div>'+dcart_alert_text+'</div>').appendTo('body')
-						.dialog({
-							modal: true, title: 'Proceed to Checkout?', zIndex: 10000, autoOpen: true,
-							width: 'auto', resizable: false,
-							buttons: {
-								'Check Out': function () {
-									jQuery('form[name=dcart_cart]').submit();
-									jQuery(this).dialog("close");
-								},
-								'Add Another Donation': function () {
-									jQuery(this).dialog("close");
-								}
-							},
-							close: function (event, ui) {
-								jQuery(this).remove();
-							}
-						});
-				}
-			}
-		});
-	} else {
-		jQuery.get(target, function(data){jQuery(dcart_target).html(data)});
-	}
-}
-
 (function($) {
+	//First let's define the donorcart loader for submitting donation forms
+	/*
+	 * Function dcartLoader
+	 *
+	 * Loads the requested URL into the DonorCart cart position on the page.
+	 *
+	 * @param target = The url of the request to load
+	 * @param postdata = The serialized form data to submit, or false for a GET request. Defaults to false
+	 * @param checkout_alert = 'skip' to automatically proceed to checkout. False to continue shopping. True to ask the user what they want to do.
+	 */
+	function dcartLoader(target, postdata, checkout_alert) {
+		var dcart_target = '#dcart_target';
+		if(typeof postdata==='undefined')postdata=false;
+		if(typeof checkout_alert==='undefined')checkout_alert=false;
+
+		//Replace the cart with a loading message
+		$(dcart_target).html('<img src="media/com_donorcart/images/ajax_loading.gif" alt="'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...')+'" height="16" width="16" align="left" border="0" /> &nbsp; &nbsp; '+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...'));
+
+		if(postdata != false) {
+			//if we have anything to post, use a post request
+			settings = {url: target, type: 'POST', data: postdata};
+			$.ajax(settings).done(function(data){
+				//if the request was successful, replace the cart with the updated cart
+				$(dcart_target).html(data);
+				if(checkout_alert != false) {
+					if(checkout_alert === 'skip') {
+						//if we are supposed to skip straight to checkout, submit the form
+						$('form[name=dcart_cart]').submit();
+					} else {
+						//ask the user if they would like to proceed to checkout
+						var dialogbuttons = {};
+						dialogbuttons[Joomla.JText._('COM_DONORCART_JS_PROCEED_TO_CHECKOUT','Check Out')] = function() {
+							$('form[name=dcart_cart]').submit();
+							$(this).dialog("close");
+						};
+						dialogbuttons[Joomla.JText._('COM_DONORCART_JS_CONTINUE_SHOPPING','Add Another Donation')] = function() {
+							$(this).dialog("close");
+						}
+						$('<div>'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_SUCCESS','Item added to cart. Do you want to checkout now?')+'</div>').appendTo('body')
+							.dialog({
+								modal: true, title: Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_SUCCESS_TITLE','Proceed to checkout?'), zIndex: 10000, autoOpen: true,
+								width: 'auto', resizable: false,
+								buttons: dialogbuttons,
+								close: function (event, ui) {
+									$(this).remove();
+								}
+							});
+					}
+				}
+				//if checkout_alert is false, don't do anything. They will continue using the page as normal.
+			}).fail(function(data) {
+				//if the request failed, replace the cart with an error message and show it to the user in a popup
+				if(!data) data='Request Failed';
+				$(dcart_target).html(data);
+				$('<div>'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_FAILURE','Failed to add item to cart. Please review your selection and try again.')+'</div>').appendTo('body')
+					.dialog({modal:true, title: Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_FAILURE_TITLE','Failed to add item to cart'), zIndex: 10000, autoOpen: true, width: 'auto', resizable:false});
+			});
+		} else {
+			//if this is a get request, simply display the output in the cart
+			$.get(target, function(data){$(dcart_target).html(data)});
+		}
+	}
+
+
 	$(document).ready(function() {
 		$('#donorcart_login_div').hide().prop('checked',false);
 		$('#donorcart_no_account_div').hide().prop('checked',false);
@@ -83,8 +108,7 @@ function dcartLoader(target, postdata, checkout_alert) {
 			$('[name='+this.name+']').not(':checked').parent().find('.optiondrawer').slideUp();
 			/* if($(this).is(':checked')) {
 				$(this).parent().find('.optiondrawer').slideDown();
-			} else {
-				$(this).parent().find('.optiondrawer').slideUp();
+			} else {				$(this).parent().find('.optiondrawer').slideUp();
 			} */
 		}
 		$('input[type=radio][name=shipto_id],input[type=radio][name=billto_id]').change(togglenewaddress).not(':checked').parent().find('.optiondrawer').slideUp();

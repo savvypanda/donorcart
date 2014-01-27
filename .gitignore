@@ -19,6 +19,8 @@
 !media/*
 !media/com_donorcart/
 !media/com_donorcart/*
+!media/com_donorcart/images/
+!media/com_donorcart/images/*
 
 # Do not ignore the module
 !modules/
@@ -31,8 +33,8 @@
 !plugins/*
 !plugins/content/
 !plugins/content/*
-!plugins/content/donorcart/
-!plugins/content/donorcart/*
+!plugins/content/donorcart_cart/
+!plugins/content/donorcart_cart/*
 !plugins/donorcart/
 !plugins/donorcart/*
 !plugins/donorcart/authorizenet/

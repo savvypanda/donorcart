@@ -7,7 +7,7 @@
 		<action name="core.delete" title="JACTION_DELETE" description="JACTION_DELETE_COMPONENT_DESC" />
 		<action name="core.edit" title="JACTION_EDIT" description="JACTION_EDIT_COMPONENT_DESC" />
 		<action name="core.edit.state" title="JACTION_EDITSTATE" description="JACTION_EDITSTATE_COMPONENT_DESC" /-->
-		<action name="cart.view" title="COM_DONORCART_PERMISSIONS_VIEW_CART_TITLE" default="ALLOW" description="COM_DONORCART_PERMISSIONS_VIEW_CART_DESC" />
-		<action name="cart.checkout" title="COM_DONORCART_PERMISSIONS_CHECKOUT_TITLE" default="ALLOW" description="COM_DONORCART_PERMISSIONS_CHECKOUT_DESC" />
+		<!--action name="cart.view" title="COM_DONORCART_PERMISSIONS_VIEW_CART_TITLE" default="ALLOW" description="COM_DONORCART_PERMISSIONS_VIEW_CART_DESC" /-->
+		<!--action name="cart.checkout" title="COM_DONORCART_PERMISSIONS_CHECKOUT_TITLE" default="ALLOW" description="COM_DONORCART_PERMISSIONS_CHECKOUT_DESC" /-->
 	</section>
 </access>

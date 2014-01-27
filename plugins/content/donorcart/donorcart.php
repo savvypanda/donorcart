@@ -124,7 +124,7 @@ class plgContentDonorcart extends JPlugin {
 		}
 
 		$parts = array(
-			'<form method="post" action="'.JRoute::_('index2.php').'" class="dcartadd'.($options['skipprompt']?' dnoprompt':'').(empty($options['classname'])?'':' '.$options['classname']).'">',
+			'<form method="post" action="'.JRoute::_('index.php').'" class="dcartadd'.($options['skipprompt']?' dnoprompt':'').(empty($options['classname'])?'':' '.$options['classname']).'">',
 			JHtml::_('form.token'),
 			'<input type="hidden" name="option" value="com_donorcart">',
 			'<input type="hidden" name="view" value="cart">',

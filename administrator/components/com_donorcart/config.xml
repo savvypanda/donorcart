@@ -12,6 +12,46 @@
 		</field>
 		<field name="admin_email" type="text" size="50" default="" label="COM_DONORCART_CONFIG_BASIC_ADMINEMAIL_LABEL" description="COM_DONORCART_CONFIG_BASIC_ADMINEMAIL_DESC" />
 	</fieldset>
+	<fieldset name="javascript" label="COM_DONORCART_CONFIG_JAVASCRIPT_LABEL" description="COM_DONORCART_CONFIG_JAVASCRIPT_DESC">
+		<field name="load_jquery" type="list" default="0" label="COM_DONORCART_CONFIG_JAVASCRIPT_LOADJQUERY_LABEL" description="COM_DONORCART_CONFIG_JAVASCRIPT_LOADJQUERY_DESCRIPTION">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field name="jqueryui_version" type="list" default="0" label="COM_DONORCART_CONFIG_JAVASCRIPT_JQUERYUI_VERSION_LABEL" description="COM_DONORCART_CONFIG_JAVASCRIPT_JQUERYUI_VERSION_DESCRIPTION">
+			<option value="0">None (loaded by another extension)</option>
+			<option value="1.10.1">1.10.1</option>
+			<option value="1.10.2">1.10.2</option>
+			<option value="1.10.3">1.10.3</option>
+			<option value="1.10.4">1.10.4</option>
+		</field>
+		<field name="jquerui_theme" type="list" default="" label="COM_DONORCART_CONFIG_JAVASCRIPT_JQUERYUI_THEME_LABEL" description="COM_DONORCART_CONFIG_JAVASCRIPT_JQUERYUI_THEME_DESCRIPTION">
+			<option value="">None (loaded by another extension)</option>
+			<option value="black-tie">black-tie</option>
+			<option value="blitzer">blitzer</option>
+			<option value="cupertino">cupertino</option>
+			<option value="dark-hive">dark-hive</option>
+			<option value="dot-luv">dot-luv</option>
+			<option value="eggplant">eggplant</option>
+			<option value="excite-bike">excite-bike</option>
+			<option value="flick">flick</option>
+			<option value="hot-sneaks">hot-sneaks</option>
+			<option value="humanity">humanity</option>
+			<option value="le-frog">le-frog</option>
+			<option value="mint-choc">mint-choc</option>
+			<option value="overcast">overcast</option>
+			<option value="pepper-grinder">pepper-grinder</option>
+			<option value="redmond">redmond</option>
+			<option value="smoothness">smoothness</option>
+			<option value="south-street">south-street</option>
+			<option value="start">start</option>
+			<option value="sunny">sunny</option>
+			<option value="swanky-purse">swanky-purse</option>
+			<option value="trontastic">trontastic</option>
+			<option value="ui-darkness">ui-darkness</option>
+			<option value="ui-lightness">ui-lightness</option>
+			<option value="vader">vader</option>
+		</field>
+	</fieldset>
 	<fieldset name="checkout" label="COM_DONORCART_CONFIG_CHECKOUT_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_DESC">
 		<field name="login_option" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_ALLOWLOGIN_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_ALLOWLOGIN_DESCRIPTION">
 			<option value="0">COM_DONORCART_CONFIG_COMMON_SKIP</option>
@@ -22,14 +62,14 @@
 			<option value="0">JNO</option>
 			<option value="1">JYES</option>
 		</field>
-		<field name="allow_return_to_login" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_RETURNTOLOGIN_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_RETURNTOLOGIN_DESC">
+		<!--field name="allow_return_to_login" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_RETURNTOLOGIN_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_RETURNTOLOGIN_DESC">
 			<option value="0">JNO</option>
 			<option value="1">JYES</option>
-		</field>
-		<field name="onestep_checkout" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_ONESTEPCHECKOUT_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_ONESTEPCHECKOUT_DESC">
+		</field-->
+		<!--field name="onestep_checkout" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_ONESTEPCHECKOUT_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_ONESTEPCHECKOUT_DESC">
 			<option value="0">JNO</option>
 			<option value="1">JYES</option>
-		</field>
+		</field-->
 		<field name="shipto_option" type="list" default="0" label="COM_DONORCART_CONFIG_CHECKOUT_SHIPTOOPTION_LABEL" description="COM_DONORCART_CONFIG_CHECKOUT_SHIPTOOPTION_DESC">
 			<option value="0">COM_DONORCART_CONFIG_COMMON_SKIP</option>
 			<option value="1">COM_DONORCART_CONFIG_COMMON_OPTIONAL</option>
