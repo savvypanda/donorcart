@@ -10,7 +10,7 @@ class JPluginDonorcart extends JPlugin {
 	protected $_name;
 
 	public function __construct(&$subject, $config) {
-		if(!$this->_name) die('Your plugin must include a name.');
+		if(!$this->_name) die('Donorcart plugin must include a name.');
 		parent::__construct($subject, $config);
 	}
 
@@ -57,23 +57,38 @@ class JPluginDonorcart extends JPlugin {
 	}
 
 	/*
-	 * Processes the submitted order and saves the submitted payment info
+	 * Use to add custom validation rules for billing and shipping addresses
 	 *
-	 * @param Object &$order The donorcartModelOrders object containing the current order
+	 * @param array &$address The address to validate
+	 * @param string $type The type of address (billing or shipping)
+	 *
+	 * @return boolean False if the address is invalid
+	 */
+	public function onValidateAddress($address, $type) {
+		return;
+	}
+
+	/*
+	 * Processes the submitted order and saves the submitted payment info.
+	 * This function is fired PRIOR to confirming the order - DO NOT submit the payment here
+	 *
+	 * @param Object $order The donorcartModelOrders object containing the current order
 	 * @param Object $params The com_donorcart JParams object
-	 * @param string $payment_name The name of the payment plugin that was selected for this order
+	 * @param string &$payment_name The name of the payment plugin that was selected for this order
 	 *
 	 * @return null|boolean|array Null if this payment plugin was not selected
 	 * 							  False if the payment form was filled out incorrectly.
 	 * 						 	  An array containing the payment details if this payment plugin was selected and the form was filled out correctly.
 	 */
 	public function onSubmitOrder($order, $params, $payment_name) {
-		if($payment_name != $this->getName()) return;
+		if(!empty($payment_name) && $payment_name != $this->getName()) return;
 		die('You must define the onSubmitOrder function in your plugin.');
 
 		//example code for this function
 		$form_was_filled_out_correctly = true;
 		if(!$form_was_filled_out_correctly) return false;
+
+		$payment_name = $this->getName();
 
 		$data = array(
 			'val1' => 'myval',
@@ -91,16 +106,16 @@ class JPluginDonorcart extends JPlugin {
 	/*
 	 * Processes the submitted order - performing any necessary actions to submit the order to the payment gateway
 	 *
-	 * @param Object &$order The donorcartModelOrders object containing the current order
+	 * @param Object $order The donorcartModelOrders object containing the current order
 	 * @param Object $params The com_donorcart JParams object
-	 * @param string $payment_name The name of the payment plugin that was selected for this order
+	 * @param boolean &$is_valid Whether or not the order has passed all validation
 	 *
 	 * @return null|boolean|string NULL if this payment plugin was not selected
-	 * 							   False if the payment cannot be completed (eg: invalid). True if the payment was completed successfully
+	 * 							   True if the payment was completed successfully
 	 * 						  	   The HTML to redirect the user to the payment gateway if more details must be collected (eg: credit card info, etc...)
 	 */
-	public function onConfirmOrder($order, $params, $payment_name) {
-		if($payment_name != $this->getName()) return;
+	public function onConfirmOrder($order, $params, $is_valid) {
+		if($order->payment_name != $this->getName()) return;
 		die('You must define the onConfirmOrder function in your plugin.');
 
 		//example code for this function
@@ -138,13 +153,12 @@ HEREDOC;
 	/*
 	 * Code to validate a request when returning from the payment gateway
 	 *
-	 * @param Object &$order The donorcartModelOrders object containing the current order
 	 * @param string &$plugin_validated The payment plugin that has already validated this request.
 	 * 								   Empty if it has not been validated by any other payment plugins yet.
 	 *
 	 * @return boolean True if the postback response can be validated by the current plugin.
 	 */
-	public function onBeforePostback($order, $plugin_validated) {
+	public function onBeforePostback($plugin_validated) {
 		return;
 
 		//example code
@@ -157,11 +171,10 @@ HEREDOC;
 	/*
 	 * Code to process a request when returning from the payment gateway
 	 *
-	 * @param Object &$order The donorcartModelOrders object containing the current order
 	 * @param boolean &$is_valid Whether or not the payment information in the current request is valid
 	 * @param string &$plugin_validated The payment plugin that has already validated this request.
 	 */
-	public function onPostback($order, $is_valid, $plugin_validated) {
+	public function onPostback($is_valid, $plugin_validated) {
 		return;
 
 		//example code
@@ -185,13 +198,12 @@ HEREDOC;
 	 * Generates the HTML to display to a user after returning from the payment gateway.
 	 * Will be called whether or not the payment is valid or from this plugin.
 	 *
-	 * @param Object &$order The donorcartModelOrders object containing the current order
 	 * @param boolean &$is_valid Whether or not the payment information in the current request is valid
 	 * @param string &$plugin_validated The payment plugin that has already validated this request.
 	 *
 	 * @return string The HTML to display to the user
 	 */
-	public function onAfterPostback($order, $is_valid, $plugin_validated) {
+	public function onAfterPostback($is_valid, $plugin_validated) {
 		return;
 
 		//example code
