@@ -164,30 +164,6 @@ border: none;
 
 tr.cart-row, .cart-table tr th {background: #ddd; color: #444;}
 
-#dcart2 * { margin:0; padding:0; font-family:arial, tahoma, verdana, sans-serif; }
-#dcart2, #dcart2 input, #dcart-tooltip { font-size:12px; }
-#dcart2 fieldset { border:0; }
-#dcart2 table { width:100%; border:0; border-collapse:collapse; }
-#dcart2 tr {  }
-#dcart2 th, #dcart2 td { padding:5px 13px 5px 13px; border:0; vertical-align:top; text-align:left; font-weight:normal; }
-#dcart2 td {border-bottom: 1px dashed #999;}
-#dcart2 td.empty { text-align:center; }
-#dcart2 p.dcart-error { text-align:center; padding:5px; color: red; font-weight: bold; }
-#dcart2 strong#dcart-title {  }
-#dcart2 th {}
-#dcart2 th#header {  }
-#dcart th#footer {  }
-#dcart2 td.dcart-item-qty { width:25%; }
-#dcart2 td.dcart-item-name { width:50%; font-weight:bold; }
-#dcart2 td.dcart-item-price { width:25%; font-weight:bold; text-align:right; }
-#dcart2 td.dcart-item-price span { display:block; }
-#dcart2 a.dcart-remove { font-size:11px; font-weight:normal; color:red; }
-#dcart2 span#dcart-subtotal { display:block; }
-#dcart2 span#dcart-subtotal strong {  }
-#dcart2 input.jcar-button { padding:2px; margin:2px;}
-#dcart2 input#dcart-checkout { float:right; }
-#dcart2 input#dcart-paypal-checkout { display:block; padding:10px; margin:20px auto; }
-#dcart2-tooltip {  padding:3px 7px 3px 25px; background:url(images/checkmark.png) 3px center no-repeat #f2fcee; }
-#dcart2_target { }
-
-
+#donorcart_checkout_container{display:block;position:relative;zoom:1;z-index:44;}
+.dcart_overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);}
+.dcart_overlay_inner{margin:0 auto;position:relative;top:40%;}

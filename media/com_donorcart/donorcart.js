@@ -82,7 +82,6 @@
 			$('#donorcart_no_account_div').slideUp("medium");
 			$('#donorcart_create_acct_div').slideDown("medium");
 		});
-		
 		$('#donorcart_no_login_option').click(function() {
 			$('#donorcart_login_div').slideUp("medium");
 			$('#donorcart_create_acct_div').slideUp("medium");
@@ -106,17 +105,9 @@
 		function togglenewaddress() {
 			$(this).parent().find('.optiondrawer').slideDown();
 			$('[name='+this.name+']').not(':checked').parent().find('.optiondrawer').slideUp();
-			/* if($(this).is(':checked')) {
-				$(this).parent().find('.optiondrawer').slideDown();
-			} else {				$(this).parent().find('.optiondrawer').slideUp();
-			} */
 		}
 		$('input[type=radio][name=shipto_id],input[type=radio][name=billto_id]').change(togglenewaddress).not(':checked').parent().find('.optiondrawer').slideUp();
 
-		$('#is_recurring').click(function() {
-				$('#recurring').toggle("medium");						
-		});
-	
 		$(document).delegate('a.dcart-link', 'click', function () {
 			dcartLoader($(this).attr('href'));
 			return false;
@@ -126,5 +117,16 @@
 			dcartLoader($(this).attr('href'), $(this).serialize(), $(this).hasClass('dnoprompt')?'skip':true);
 			return false;
 		})
+
+		$('form.donorcart_action_form').submit(function() {
+			settings = {url: this.action, type: 'POST', data: $(this).serialize()};
+			$('#donorcart_checkout_container').append('<div class="dcart_overlay"><div class="dcart_overlay_inner">Loading...</div></div>');
+			$.ajax(settings).done(function(data){
+				$('#donorcart_checkout_container').replaceWith(data);
+			}).fail(function(data){
+				$('#donorcart_checkout_container').remove('.dcart_overlay');
+				alert('There was an error processing your request. Please review the checkout form and try again. If the problem persists after refreshing the page, contact the website administrator for assistance.');
+			});
+		});
 	});
 })(jQuery);

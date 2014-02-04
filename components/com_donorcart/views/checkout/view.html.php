@@ -13,14 +13,7 @@ class DonorcartViewCheckout extends FOFViewHtml {
 			$this->assign('params',JComponentHelper::getParams('com_donorcart'));
 		}
 
-		/* The layout should already be set correctly by now.
-		if(($layout=='default' || $layout=='form') && $order->email):
-			//$this->setLayout($layout = 'profile');
-			$this->setLayout($layout = 'profile');
-		endif;
-		*/
-
-		if($layout == 'addresses' || $layout=='onestep') {
+		if($layout == 'default') {
 			$prior_addresses = array();
 			if($user->id) {
 				$prior_addresses = FOFModel::getTmpInstance('addresses','DonorcartModel')->user_id($user->id)->locked(1)->getItemList(true);
@@ -31,14 +24,14 @@ class DonorcartViewCheckout extends FOFViewHtml {
 		$this->assign('order',$order);
 		$this->assign('user',$user);
 
-		if($error = JRequest::getString('error')) {
+		/* if($error = JRequest::getString('error')) {
 			$this->assign('error',$error);
-		}
+		} */
 
 		return parent::display();
 	}
 
-	public function includeLayout($tpl, $layout = false) {
+	/* public function includeLayout($tpl, $layout = false) {
 		if (version_compare(JVERSION, '3.0', 'lt')) JError::setErrorHandling(E_ALL,'ignore');
 		if($layout && $layout != $this->_layout) {
 			$previouslayout = $this->_layout;
@@ -56,5 +49,5 @@ class DonorcartViewCheckout extends FOFViewHtml {
 		} else {
 			echo $result;
 		}
-	}
+	} */
 }

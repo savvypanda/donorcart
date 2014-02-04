@@ -1,11 +1,5 @@
-<?php defined('_JEXEC') or die("Restricted Access");
-$this->display_cart = false;
-$this->includeLayout('head','default');
-?>
-
-<h3>Thank you for your Gift.</h3>
-<p>Your Donation has been successfully completed!<br /></p>
-<p>Please check your email for your order receipt.</p>
-<p>If you have any questions or concerns about your order, please email tech@mangotreemedia.com.</p>
-
-<?php $this->includeLayout('tail','default'); ?>
+<?php defined('_JEXEC') or die("Restricted Access"); ?>
+<div id="donorcart_checkout_container">
+<h3><?=JText::_('COM_DONORCART_HEADING_THANKYOU')?></h3>
+<div><?=JText::_('COM_DONORCART_THANKYOU_TEXT')?></div>
+</div>

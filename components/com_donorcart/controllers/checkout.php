@@ -60,6 +60,7 @@ class DonorcartControllerCheckout extends FOFController {
 			$this->layout = 'emptycart';
 		} elseif($this->_modelObject->record->status == 'complete') {
 			$this->_clearSession();
+			$this->_sendConfirmationEmails();
 			$this->layout = 'thankyou';
 		} elseif($this->getTask() == 'review') {
 			$this->layout = 'review';
@@ -298,7 +299,6 @@ class DonorcartControllerCheckout extends FOFController {
 		FOFModel::getTmpInstance('cart_items','DonorcartModel')->setId($id)->delete();
 		//FOFModel::getTmpInstance('orders','DonorcartModel')->calcOrderTotal($this->order);
 		//$this->order = FOFModel::getTmpInstance('orders','DonorcartModel')->getItem($this->order->donorcart_order_id);
-		$this->_modelObject->getItem();
 		return true;
 	}
 
@@ -309,7 +309,6 @@ class DonorcartControllerCheckout extends FOFController {
 		$session = JFactory::getSession();
 		if(!$order_id || $this->_modelObject->delete()) {
 			$session->set('order_id',null);
-			$this->_modelObject->record = null;
 		}
 		if(!$cart_id || FOFModel::getTmpInstance('carts','DonorcartModel')->setId($cart_id)->delete()) {
 			$session->set('cart_id',null);
@@ -429,11 +428,28 @@ class DonorcartControllerCheckout extends FOFController {
 			$orderdata['payment_id'] = $payment_model->getId();
 		}
 
-		if($is_valid) {
+		////Step 3: ONLY IF VALID AND THE COMPONENT PARAMETERS SPECIFY NO REVIEW STEP
+		$htmloutput = '';
+		if($is_valid && $this->params->get('review_option')==0) {
 			$orderdata['submitted'] = 1;
+			JPluginHelper::importPlugin('donorcart');
+			$dispatcher = JDispatcher::getInstance();
+			$results = $dispatcher->trigger('onConfirmOrder', array($this->_modelObject->record, $this->params, $is_valid));
+			foreach($results as $result) {
+				if($result === true) {
+					$orderdata['status'] = 'complete';
+					$this->_lock_addresses();
+				} elseif(is_string($result)) {
+					$htmloutput .= $result;
+				}
+			}
 		}
+
 		$this->_modelObject->save($orderdata);
-		$this->_modelObject->getItem();
+
+		if(!empty($htmloutput)) {
+			return $htmloutput;
+		}
 
 		return true;
 	}
@@ -479,34 +495,26 @@ class DonorcartControllerCheckout extends FOFController {
 		//Step 3: confirm the payment - ONLY IF VALID
 		$htmloutput = '';
 		if($is_valid) {
+			$orderdata = array(
+				'donorcart_order_id' => $this->_modelObject->record->donorcart_order_id,
+				'submitted' => 1
+			);
 			JPluginHelper::importPlugin('donorcart');
 			$dispatcher = JDispatcher::getInstance();
-			$payment_complete = false;
 			$results = $dispatcher->trigger('onConfirmOrder', array($this->_modelObject->record, $this->params, $is_valid));
 			foreach($results as $result) {
 				if($result === true) {
-					$payment_complete = true;
+					$orderdata['status'] = 'complete';
+					$this->_lock_addresses();
 				} elseif(is_string($result)) {
 					$htmloutput .= $result;
 				}
 			}
-		}
-
-		if($is_valid) {
-			$this->_lock_addresses();
-
-			if($payment_complete) {
-				//The payment was successful. Save the order and display the thankyou page.
-				$orderdata = array(
-					'donorcart_order_id' => $this->_modelObject->record->donorcart_order_id,
-					'status' => 'complete'
-				);
-				$this->_modelObject->save($orderdata);
-			}
+			$this->_modelObject->save($orderdata);
 		}
 
 		if(!empty($htmloutput)) {
-			echo $htmloutput;
+			return $htmloutput;
 		}
 
 		return true;
@@ -599,12 +607,24 @@ class DonorcartControllerCheckout extends FOFController {
 			}
 		}
 
-		return $returnval;
+		if($returnval) return $returnval;
+		return true;
 	}
 
 	public function _clearSession() {
 		$session = JFactory::getSession();
 		$session->set('cart_id',null);
 		$session->set('order_id',null);
+	}
+
+	public function _sendConfirmationEmails() {
+		if($this->params->get('send_confirmation_email_to_admin')) {
+			$data = $this->params->get('admin_email_template');
+			//TODO: Implement the rest of this functionality
+		}
+		if($this->params->get('send_confirmation_email_to_user')) {
+			$data = $this->params->get('user_email_template');
+			//TODO: Implement the rest of this functionality
+		}
 	}
 }

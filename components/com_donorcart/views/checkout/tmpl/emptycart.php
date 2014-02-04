@@ -1,6 +1,5 @@
-<?php defined('_JEXEC') or die("Restricted Access");
-$this->includeLayout('head','default');
-?>
-<h3>Empty Cart</h3>
-<p>You cannot checkout while your cart is empty. Select an item to checkout with and return here to proceed.</p>
-<?php $this->includeLayout('tail','default'); ?>
+<?php defined('_JEXEC') or die("Restricted Access"); ?>
+<div id="donorcart_checkout_container">
+<h3><?=JText::_('COM_DONORCART_EMPTY_CART')?></h3>
+<p><?=JText::_('COM_DONORCART_CHECKOUT_EMPTYCART_NOT_ALLOWED')?></p>
+</div>

@@ -133,7 +133,12 @@ class JPluginDonorcart extends JPlugin {
 </form>
 <script type="text/javascript">window.setTimeout(function(){document.getElementById("someotherserverform").submit()},2000)</script>
 HEREDOC;
-		return $html;
+
+		$althtml = <<<HEREDOC
+<iframe src="https://secure.someotherserver"></iframe>
+HEREDOC;
+
+		return $html or $althtml;
 	}
 
 	/*
@@ -201,7 +206,7 @@ HEREDOC;
 	 * @param boolean &$is_valid Whether or not the payment information in the current request is valid
 	 * @param string &$plugin_validated The payment plugin that has already validated this request.
 	 *
-	 * @return string The HTML to display to the user
+	 * @return string The HTML to display to the user. If nothing is returned, the regular checkout screen (or thankyou page) will be displayed instead
 	 */
 	public function onAfterPostback($is_valid, $plugin_validated) {
 		return;
