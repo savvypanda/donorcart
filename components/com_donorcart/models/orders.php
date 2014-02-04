@@ -1,7 +1,7 @@
 <?php defined('_JEXEC') or die('Restricted Access');
 
 class DonorcartModelOrders extends FOFModel {
-	//public $cart, $billing_address, $shipping_address, $payment, $custom_fields;
+	//public $cart, $billing_address, $shipping_address, $payment;
 
 	public function __construct($config = array()) {
 		$user = JFactory::getUser();
@@ -9,20 +9,22 @@ class DonorcartModelOrders extends FOFModel {
 		$input = JFactory::getApplication()->input;
 		$request_id = $input->get('id',false,'INT');
 		$my_id = $request_id?$request_id:$session->get('order_id',0);
+		/* There has to be a better way to get the order than to get it from the cart_id in the constructor
 		if(!$my_id) {
 			$cart_id = $session->get('cart_id',0);
 			if($cart_id) {
 				$my_id = $this->getOrderIdFromCartId($cart_id);
 			}
 		}
+		*/
 		//$config=array_merge($config, array('table'=>'orders','id'=>$my_id));
 		$config['id']=$my_id;
 
 		parent::__construct($config);
+		$order = $this->getItem();
 
 		if($request_id) {
 			$viewtoken = $input->get('viewtoken','');
-			$order = $this->getItem();
 			if(!$order->viewtoken || $viewtoken != $order->viewtoken) {
 				if(!$user->id || $user->id != $order->user_id) {
 					//Jerror::raiseError(403,'You are not allowed to view that order.');
@@ -35,7 +37,7 @@ class DonorcartModelOrders extends FOFModel {
 		$this->setState('status','complete');
 	}
 
-	private function getOrderIdFromCartId($cart_id) {
+	/* private function getOrderIdFromCartId($cart_id) {
 		$query = 'SELECT donorcart_order_id FROM #__donorcart_orders WHERE cart_id='.$this->_db->quote($cart_id);
 		$this->_db->setQuery($query);
 		$this->_db->query();
@@ -43,9 +45,9 @@ class DonorcartModelOrders extends FOFModel {
 			return $this->_db->loadResult();
 		}
 		return 0;
-	}
+	} */
 
-	public function getSubTotal($record = null) {
+	/* public function getSubTotal($record = null) {
 		if(!$record) {
 			$record = $this->getItem();
 		}
@@ -59,34 +61,23 @@ class DonorcartModelOrders extends FOFModel {
 			}
 		}
 		return $subtotal;
-	}
+	} */
 
-	public function calcOrderTotal(&$record = null) {
-		if(!$record) {
-			$record = $this->getItem();
-		} elseif(!is_object($record)) {
-			$record = (object) $record;
-			$this->onAfterGetItem($record);
+	public function updateOrderTotal($subtotal = null) {
+		if(!$this->getId()) return false;
+		if(!$subtotal) {
+			$subtotal = $this->record->cart->subtotal;
 		}
-		$subtotal = $this->getSubTotal($record);
-		return $subtotal;
+		$total = $subtotal;
 		//Todo: If we have more calculations to do, do them here
-		//$total = $subtotal;
-		//return $total;
-	}
 
-	public function updateOrderTotal(&$record = null) {
-		$total = $this->calcOrderTotal($record);
-
-		if(!$record->donorcart_order_id) return false;
-
-		if($total != $record->order_total) {
-			$this->_db->setQuery('UPDATE #__donorcart_orders SET order_total='.$this->_db->quote($total).' WHERE donorcart_order_id='.$this->_db->quote($record->donorcart_order_id));
+		if($total != $this->record->order_total) {
+			$this->_db->setQuery('UPDATE #__donorcart_orders SET order_total='.$this->_db->quote($total).' WHERE donorcart_order_id='.$this->_db->quote($this->record->donorcart_order_id));
 			$this->_db->query();
-			$record->order_total = $total;
+			$this->record->order_total = $total;
 		}
 
-		return true;
+		return $total;
 	}
 
 	protected function onProcessList(&$resultArray) {
@@ -108,9 +99,6 @@ class DonorcartModelOrders extends FOFModel {
 		}
 		if($record->payment_id) {
 			$record->payment = FOFModel::getTmpInstance('payments','DonorcartModel')->getItem($record->payment_id);
-		}
-		if($record->donorcart_order_id) {
-			$record->custom_fields = FOFModel::getTmpInstance('customFields','DonorcartModel')->order_id($record->donorcart_order_id)->getItemList(true);
 		}
 	}
 
@@ -159,28 +147,29 @@ class DonorcartModelOrders extends FOFModel {
 			return false;
 		}
 		$result = parent::onBeforeDelete($id, $table);
-		if($result) {
-			//first remove all custom fields assiciated with this order
-			$custom_fields = FOFModel::getTmpInstance('customFields','DonorcartModel')->order_id($id)->getItemList(true);
-			if(!empty($custom_fields)) {
-				foreach($custom_fields as $field) {
-					FOFModel::getTmpInstance('customFields','DonorcartModel')->setId($field->donorcart_custom_field_id)->delete();
-				}
-			}
-			//then remove any non-locked addresses associated with this order
-			if($record->shipping_address_id && $record->shipping_address->locked != 1) {
-				FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->shipping_address_id)->delete();
-			}
-			if($record->billing_address_id && $record->shipping_address_id != $record->billing_address_id && $record->billing_address->locked != 1) {
-				FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->billing_address_id)->delete();
-			}
-			//then remove any payment associated with this order
-			if($record->payment_id) {
-				FOFModel::getTmpInstance('payments','DonorcartModel')->setId($record->payment_id)->delete();
-			}
-			//TODO: Decide if we should also remove the cart when an order is deleted from the frontend.
+
+		//first remove any payment associated with this order
+		if($result && $record->payment_id) {
+			$result = FOFModel::getTmpInstance('payments','DonorcartModel')->setId($record->payment_id)->delete();
 		}
+		//then remove any non-locked addresses associated with this order
+		if($result && $record->shipping_address_id && $record->shipping_address->locked != 1) {
+			$result = FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->shipping_address_id)->delete();
+		}
+		if($result && $record->billing_address_id && $record->shipping_address_id != $record->billing_address_id && $record->billing_address->locked != 1) {
+			$result = FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->billing_address_id)->delete();
+		}
+		//lastly remove the cart
+		if($result && $record->cart_id) {
+			$result = FOFModel::getTmpInstance('carts','DonorcartModel')->setId($record->cart_id)->delete();
+		}
+
 		return $result;
+	}
+
+	protected function onAfterDelete($id) {
+		JFactory::getSession()->set('order_id',null);
+		return parent::onAfterDelete($id);
 	}
 
 	public function createOrder() {

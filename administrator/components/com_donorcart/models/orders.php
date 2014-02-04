@@ -85,23 +85,13 @@ class DonorcartModelOrders extends FOFModel {
 		if($record->payment_id) {
 			$record->payment = FOFModel::getTmpInstance('payments','DonorcartModel')->getItem($record->payment_id);
 		}
-		if($record->donorcart_order_id) {
-			$record->custom_fields = FOFModel::getTmpInstance('customFields','DonorcartModel')->order_id($record->donorcart_order_id)->getItemList(true);
-		}
 	}
 
 	protected function onBeforeDelete(&$id, &$table) {
 		$record = $this->getItem($id);
 		$result = parent::onBeforeDelete($id, $table);
 		if($result) {
-			//first remove all custom fields assiciated with this order
-			$custom_fields = FOFModel::getTmpInstance('customFields','DonorcartModel')->order_id($id)->getItemList(true);
-			if(!empty($custom_fields)) {
-				foreach($custom_fields as $field) {
-					FOFModel::getTmpInstance('customFields','DonorcartModel')->setId($field->donorcart_custom_field_id)->delete();
-				}
-			}
-			//then remove any non-locked addresses associated with this order
+			//first remove any non-locked addresses associated with this order
 			if($record->shipping_address_id && $record->shipping_address->locked != 1) {
 				FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->shipping_address_id)->delete();
 			}

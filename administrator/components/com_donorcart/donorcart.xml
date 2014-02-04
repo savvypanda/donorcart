@@ -7,7 +7,7 @@
 	<authorUrl>http://www.mangotreemedia.com</authorUrl>
 	<copyright></copyright>
 	<license></license>
-	<version>0.1.6</version>
+	<version>0.2.6</version>
 	<description>Provides a simple method to add items to a shopping cart and to checkout using a payment gateway of your choice.</description>
 
 	<scriptfile>script.donorcart.php</scriptfile>

@@ -23,10 +23,8 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_addresses` (
 
 CREATE TABLE IF NOT EXISTS `#__donorcart_payments` (
 	`donorcart_payment_id` SERIAL,
-	`external_reference` VARCHAR(80),
-	`user_id` INT(11),
 	`payment_type` VARCHAR(80) NOT NULL,
-	`status` VARCHAR(50) NOT NULL DEFAULT 'pending',
+	`external_reference` VARCHAR(80),
 	`infohash` TEXT,
 	PRIMARY KEY (`donorcart_payment_id`),
 	INDEX (`external_reference`),
@@ -37,6 +35,7 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_carts` (
 	`donorcart_cart_id` SERIAL,
 	`user_id` INT(11),
 	`session_id` VARCHAR(200),
+	`subtotal` DECIMAL(8,2) DEFAULT 0.00,
 	PRIMARY KEY (`donorcart_cart_id`),
 	FOREIGN KEY (`user_id`) REFERENCES `#__users`(`id`)
 );
@@ -46,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_cart_items` (
 	`cart_id` BIGINT(20) UNSIGNED NOT NULL,
 	`sku` VARCHAR(80) NOT NULL,
 	`name` VARCHAR (80) NOT NULL,
-	`price` VARCHAR(8) NOT NULL,
+	`price` DECIMAL(8,2) DEFAULT 0.00,
 	`qty` INT(6) NOT NULL DEFAULT 1,
 	`url` VARCHAR(80),
 	PRIMARY KEY (`donorcart_cart_item_id`),
@@ -77,13 +76,4 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_orders` (
 	FOREIGN KEY (`shipping_address_id`) REFERENCES `#__donorcart_addresses`(`donorcart_address_id`),
 	FOREIGN KEY (`billing_address_id`) REFERENCES `#__donorcart_addresses`(`donorcart_address_id`),
 	FOREIGN KEY (`payment_id`) REFERENCES `#__donorcart_payments`(`donorcart_payment_id`)
-);
-
-CREATE TABLE IF NOT EXISTS `#__donorcart_custom_fields` (
-	`donorcart_custom_field_id` SERIAL,
-	`order_id` BIGINT(20) UNSIGNED,
-	`field` VARCHAR(80),
-	`value` VARCHAR(80),
-	PRIMARY KEY (`donorcart_custom_field_id`),
-	FOREIGN KEY (`order_id`) REFERENCES `#__donorcart_orders`(`donorcart_order_id`)
 );

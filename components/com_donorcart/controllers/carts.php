@@ -36,7 +36,7 @@ class DonorcartControllerCarts extends FOFController {
 	public function _remove_item() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$id = JRequest::getInt('item',null);
-		FOFModel::getAnInstance('cart_items','DonorcartModel')->setId($id)->delete();
+		FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($id);
 		return $this->display();
 	}
 
@@ -59,15 +59,7 @@ class DonorcartControllerCarts extends FOFController {
 
 	public function _empty_cart() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
-		$cart_id = FOFModel::getAnInstance('carts','DonorcartModel')->getId();
-		if($cart_id) {
-			$cart_items = FOFModel::getTmpInstance('cartItems','DonorcartModel')->cart_id($cart_id)->getItemList(true);
-			if(!empty($cart_items)) {
-				foreach($cart_items as $item) {
-					FOFModel::getTmpInstance('cartItems','DonorcartModel')->setId($item->donorcart_cart_item_id)->delete();
-				}
-			}
-		}
+		FOFModel::getAnInstance('carts','DonorcartModel')->emptyCart();
 		return $this->display();
 	}
 

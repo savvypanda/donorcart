@@ -25,8 +25,6 @@ class DonorcartControllerCheckout extends FOFController {
 			$this->_modelObject->createOrder();
 		}
 		$this->_modelObject->getItem();
-		//$this->order = $ordermodel->getItem($order_id);
-		//$ordermodel->calcOrderTotal($this->order);
 
 		$this->params = JComponentHelper::getParams('com_donorcart');
 
@@ -296,7 +294,7 @@ class DonorcartControllerCheckout extends FOFController {
 	public function _remove_item() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$id = JRequest::getInt('item',null);
-		FOFModel::getTmpInstance('cart_items','DonorcartModel')->setId($id)->delete();
+		FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($id);
 		//FOFModel::getTmpInstance('orders','DonorcartModel')->calcOrderTotal($this->order);
 		//$this->order = FOFModel::getTmpInstance('orders','DonorcartModel')->getItem($this->order->donorcart_order_id);
 		return true;
@@ -304,16 +302,7 @@ class DonorcartControllerCheckout extends FOFController {
 
 	public function _empty_cart() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
-		$order_id = $this->_modelObject->record->donorcart_order_id;
-		$cart_id = $this->_modelObject->record->cart_id;
-		$session = JFactory::getSession();
-		if(!$order_id || $this->_modelObject->delete()) {
-			$session->set('order_id',null);
-		}
-		if(!$cart_id || FOFModel::getTmpInstance('carts','DonorcartModel')->setId($cart_id)->delete()) {
-			$session->set('cart_id',null);
-		}
-		return true;
+		return $this->_modelObject->delete();
 	}
 
 	public function _submit() {
