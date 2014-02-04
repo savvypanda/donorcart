@@ -18,13 +18,13 @@ class DonorcartControllerCheckout extends FOFController {
 		$this->registerTask('confirm','_confirm');
 		$this->registerTask('postback','_postback');
 
-		$this->getThisModel();
+		$ordermodel = $this->getThisModel();
 		//$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		//$order_id = $ordermodel->getId();
-		if(!$this->_modelObject->getId()) {
-			$this->_modelObject->createOrder();
+		if(!$ordermodel->getId()) {
+			$ordermodel->createOrder();
 		}
-		$this->_modelObject->getItem();
+		//$ordermodel->getItem();
 
 		$this->params = JComponentHelper::getParams('com_donorcart');
 
@@ -51,18 +51,18 @@ class DonorcartControllerCheckout extends FOFController {
 			} elseif($taskresult !== true) {
 				return false;
 			}
-			$this->_modelObject->getItem();
 		}
+		$ordermodel = $this->getThisModel();
+		$order_id = $ordermodel->getId();
+		$order = $ordermodel->reset()->setId($order_id)->getItem();
 
-		if(!$this->_modelObject->record->cart_id || !is_object($this->_modelObject->record->cart) || empty($this->_modelObject->record->cart->items)) {
+		if(!$order->cart_id || !is_object($order->cart) || empty($order->cart->items)) {
 			$this->layout = 'emptycart';
-		} elseif($this->_modelObject->record->status == 'complete') {
+		} elseif($order->status == 'complete') {
 			$this->_clearSession();
 			$this->_sendConfirmationEmails();
 			$this->layout = 'thankyou';
-		} elseif($this->getTask() == 'review') {
-			$this->layout = 'review';
-		} else {
+		} elseif($this->layout != 'review') {
 			$this->layout = 'default';
 		}
 
@@ -105,7 +105,7 @@ class DonorcartControllerCheckout extends FOFController {
 		//preform the login action
 		if($mainframe->login($credentials, $options) === true) {
 			$user = JFactory::getUser();
-			$this->_modelObject->updateUserData(null, $user->id, $user->email, 'checkout');
+			$this->getThisModel()->updateUserData(null, $user->id, $user->email, 'checkout');
 			//$this->order->user_id = $user->id;
 			//$this->order->email = $user->email;
 		}
@@ -116,7 +116,8 @@ class DonorcartControllerCheckout extends FOFController {
 	public function _logout() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		//if(is_object($this->_modelObject->record) && !empty($this->_modelObject->record->donorcart_order_id)) {
-			if(FOFModel::getAnInstance('orders','DonorcartModel')->removeUserData(null, false, 'cart')) {
+			//if(FOFModel::getAnInstance('orders','DonorcartModel')->removeUserData(null, false, 'cart')) {
+			if($this->getThisModel()->removeUserData(null, false, 'cart')) {
 				$session = JFactory::getSession();
 				$cartid = $session->get('cart_id',null);
 				$orderid = $session->set('order_id',null);
@@ -128,15 +129,12 @@ class DonorcartControllerCheckout extends FOFController {
 				return false;
 			}
 		//}
-		return = true;
+		return true;
 	}
 
 	public function _register() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$mainframe = JFactory::getApplication();
-
-		$session = JFactory::getSession();
-		//$session->set('guestcheckout',null);
 
 		if(version_compare(JVERSION, '3.0.0', 'ge')) {
 			//This code is adapted from the Joomla 3.0.x User component
@@ -181,13 +179,13 @@ class DonorcartControllerCheckout extends FOFController {
 				$usersipass['password'] = $data['password1'];
 				if($mainframe->login($usersipass)) {
 					$user = JFactory::getUser();
-					$this->_modelObject->updateUserData(null, $user->id, $user->email, 'checkout');
+					$this->getThisModel()->updateUserData(null, $user->id, $user->email, 'checkout');
 					//FOFModel::getTmpInstance('orders','DonorcartModel')->updateUserData($this->order->donorcart_order_id, $user->id, $user->email, 'checkout');
 					//$this->order->user_id = $user->id;
 					//$this->order->email = $user->email;
 				}
 			}
-		} elseif(version_compare(JVERSION, '1.6.0', 'ge')) {
+		} else {
 			/* This code is based on the J2.5 Users component code. Alter at your risk */
 			require_once JPATH_ROOT.'/components/com_users/controller.php';
 			require_once JPATH_ROOT.'/components/com_users/models/registration.php';
@@ -208,7 +206,7 @@ class DonorcartControllerCheckout extends FOFController {
 				$usersipass['password'] = $post['password1'];
 				if($mainframe->login($usersipass) === true) {
 					$user = JFactory::getUser();
-					$this->_modelObject->updateUserData(null, $user->id, $user->email, 'checkout');
+					$this->getThisModel()->updateUserData(null, $user->id, $user->email, 'checkout');
 					//FOFModel::getTmpInstance('orders','DonorcartModel')->updateUserData($this->order->donorcart_order_id, $user->id, $user->email, 'checkout');
 					//$this->order->user_id = $user->id;
 					//$this->order->email = $user->email;
@@ -216,76 +214,6 @@ class DonorcartControllerCheckout extends FOFController {
 			} else {
 				$errorMessage = $model->getError();
 				JRequest::setVar('error', $errorMessage);
-			}
-		} else {
-			//adapted from com_user: register_save
-			require JPATH_ROOT.'/components/com_user/controller.php';
-
-			// Get required system objects
-			$user = clone(JFactory::getUser());
-			$authorize =& JFactory::getACL();
-
-			// If user registration is not allowed, show 403 not authorized.
-			$usersConfig = &JComponentHelper::getParams('com_users');
-			if($usersConfig->get('allowUserRegistration') == '0') {
-				JError::raiseError(403, JText::_('Access Forbidden'));
-				return true;
-			}
-
-			// Initialize new usertype setting
-			$newUsertype = $usersConfig->get('new_usertype');
-			if(!$newUsertype) {
-				$newUsertype = 'Registered';
-			}
-
-			// Bind the post array to the user object
-			if(!$user->bind(JRequest::get('post'), 'usertype')) {
-				JError::raiseError(500, $user->getError());
-				return true;
-			}
-
-			// Set some initial user values
-			$user->set('id', 0);
-			$user->set('usertype', '');
-			$user->set('gid', $authorize->get_group_id('', $newUsertype, 'ARO'));
-			$date =& JFactory::getDate();
-			$user->set('registerDate', $date->toMySQL());
-
-			// If user activation is turned on, we need to set the activation information
-			$useractivation = $usersConfig->get('useractivation');
-			if($useractivation == '1') {
-				jimport('joomla.user.helper');
-				$user->set('activation', JUtility::getHash(JUserHelper::genRandomPassword()));
-				$user->set('block', '1');
-			}
-
-			// If there was an error with registration, set the message and display form
-			if(!$user->save()) {
-				JError::raiseWarning('', JText::_($user->getError()));
-				return true;
-			}
-
-			// Send registration confirmation mail
-			//$password = JRequest::getString('password', '', 'post', JREQUEST_ALLOWRAW);
-			$password = JRequest::getString('password');
-			$password = preg_replace('/[\x00-\x1F\x7F]/', '', $password); //Disallow control chars in the email
-			UserController::_sendMail($user, $password);
-
-			// Everything went fine, set relevant message depending upon user activation state and display message
-			if($useractivation == 1) {
-				$message = JText::_('REG_COMPLETE_ACTIVATE');
-			} else {
-				$message = JText::_('REG_COMPLETE');
-			}
-
-			$usersipass = array();
-			$usersipass['username'] = $user->get('username');
-			$usersipass['password'] = $password;
-			if($mainframe->login($usersipass) === true) {
-				$this->_modelObject->updateUserData(null, $user->id, $user->email, 'checkout');
-				//FOFModel::getTmpInstance('orders','DonorcartModel')->updateUserData($this->order->donorcart_order_id, $user->id, $user->email, 'checkout');
-				//$this->order->user_id = $user->id;
-				//$this->order->email = $user->email;
 			}
 		}
 		return true;
@@ -302,17 +230,21 @@ class DonorcartControllerCheckout extends FOFController {
 
 	public function _empty_cart() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
-		return $this->_modelObject->delete();
+		return $this->getThisModel()->delete();
 	}
 
 	public function _submit() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$is_valid = true;
 
+		$ordermodel =& $this->getThisModel();
+		$order = $ordermodel->getItem();
+		$order_id = $order->donorcart_order_id;
+
 		//track the order information (for changing address/payment details, etc...)
 		$orderdata = array(
-			'donorcart_order_id' => $this->_modelObject->record->donorcart_order_id,
-			'submitted' => 0
+			'donorcart_order_id' => $order_id,
+			'status' => 'checkout'
 		);
 
 		//Step 1: Save the email address (if applicable)
@@ -371,7 +303,6 @@ class DonorcartControllerCheckout extends FOFController {
 				JFactory::getApplication()->enqueueMessage($addressmodel->getError(), 'error');
 			}
 			$shipto_id = $addressmodel->getId();
-			$this->_modelObject->record->shipping_address = $addressmodel->getSavedTable();
 		}
 		$orderdata['shipping_address_id']=$shipto_id;
 
@@ -386,7 +317,6 @@ class DonorcartControllerCheckout extends FOFController {
 				JFactory::getApplication()->enqueueMessage($addressmodel->getError(), 'error');
 			}
 			$billto_id = $addressmodel->getId();
-			$this->_modelObject->record->billing_address = $addressmodel->getSavedTable();
 		}
 		$orderdata['billing_address_id']=$billto_id;
 
@@ -396,7 +326,7 @@ class DonorcartControllerCheckout extends FOFController {
 		$dispatcher = JDispatcher::getInstance();
 		$payment_name = JRequest::getVar('payment_method','');
 		$payment_details = false;
-		$results = $dispatcher->trigger('onSubmitOrder', array($this->_modelObject->record, $this->params, &$payment_name));
+		$results = $dispatcher->trigger('onSubmitOrder', array($order, $this->params, &$payment_name));
 		foreach($results as $result) {
 			if($result === false || is_array($result)) {
 				$payment_details=$result;
@@ -405,39 +335,51 @@ class DonorcartControllerCheckout extends FOFController {
 		if($payment_details) {
 			$payment_model = FOFModel::getTmpInstance('payments','DonorcartModel');
 
-			if($this->_modelObject->record->payment_id) {
-				$payment_details['donorcart_payment_id'] = $this->_modelObject->record->payment_id;
+			if($order->payment_id) {
+				$payment_details['donorcart_payment_id'] = $order->payment_id;
 			}
 			$result = $payment_model->save($payment_details);
 			if(!$result) {
 				$is_valid = false;
 				JFactory::getApplication()->enqueueMessage($payment_model->getError(), 'error');
 			}
-			$this->_modelObject->record->payment = $payment_model->getSavedTable();
 			$orderdata['payment_id'] = $payment_model->getId();
+		} else {
+			$is_valid = false;
 		}
 
-		////Step 3: ONLY IF VALID AND THE COMPONENT PARAMETERS SPECIFY NO REVIEW STEP
-		$htmloutput = '';
-		if($is_valid && $this->params->get('review_option')==0) {
-			$orderdata['submitted'] = 1;
-			JPluginHelper::importPlugin('donorcart');
-			$dispatcher = JDispatcher::getInstance();
-			$results = $dispatcher->trigger('onConfirmOrder', array($this->_modelObject->record, $this->params, $is_valid));
-			foreach($results as $result) {
-				if($result === true) {
-					$orderdata['status'] = 'complete';
-					$this->_lock_addresses();
-				} elseif(is_string($result)) {
-					$htmloutput .= $result;
+		//Step 3: Save the order.
+		$ordermodel->save($orderdata);
+
+		if($is_valid) {
+			if($this->params->get('review_option')==0) {
+				//Step 4: Submit the order (ONLY IF VALID AND THE COMPONENT PARAMETERS SPECIFY NO REVIEW STEP)
+				$htmloutput = '';
+				$order = $ordermodel->reset()->setId($order_id)->getItem(); //refresh the order in case it was modified since the beginning of the submit function
+				$orderdata = array(
+					'donorcart_order_id' => $order_id,
+					'status' => 'submitted'
+				);
+				JPluginHelper::importPlugin('donorcart');
+				$dispatcher = JDispatcher::getInstance();
+				$results = $dispatcher->trigger('onConfirmOrder', array($order, $this->params, $is_valid));
+				foreach($results as $result) {
+					if($result === true) {
+						$orderdata['status'] = 'complete';
+						$this->_lock_addresses();
+					} elseif(is_string($result)) {
+						$htmloutput .= $result;
+					}
 				}
+				$ordermodel->save($orderdata);
+
+				if(!empty($htmloutput)) {
+					return $htmloutput;
+				}
+			} else {
+				//Step 4 Alternate: set the layout to 'review' (ONLY IF THE ORDER IS VALID)
+				$this->layout = 'review';
 			}
-		}
-
-		$this->_modelObject->save($orderdata);
-
-		if(!empty($htmloutput)) {
-			return $htmloutput;
 		}
 
 		return true;
@@ -445,9 +387,13 @@ class DonorcartControllerCheckout extends FOFController {
 
 	public function _confirm() {
 		$is_valid = true;
+		$ordermodel =& $this->getThisModel();
+		$order = $ordermodel->getItem();
+		JPluginHelper::importPlugin('donorcart');
+		$dispatcher = JDispatcher::getInstance();
 
 		//Step 1: Validate the email address (if applicable)
-		$email = $this->_modelObject->record->email;
+		$email = $order->email;
 		if($email) {
 			$email = filter_var($email, FILTER_VALIDATE_EMAIL);
 			if(!$email) {
@@ -459,38 +405,36 @@ class DonorcartControllerCheckout extends FOFController {
 		}
 
 		//Step 2: Validate the billing and shipping addresses (if applicable)
-		if(!$this->_modelObject->record->shipping_address_id && $this->params->get('shipto_option',0) == 2) {
+		if($order->shipping_address_id) {
+			$results = $dispatcher->trigger('onValidateAddress', array(((array)$order->shipping_address), 'shipping'));
+			foreach($results as $result) {
+				if($result === false) {
+					$is_valid = false;
+				}
+			}
+		} elseif($this->params->get('shipto_option',0) == 2) {
 			$is_valid = false;
 		}
-		if(!$this->_modelObject->record->billing_address_id && $this->params->get('billto_option',0) == 2) {
+		if($order->billing_address_id) {
+			$results = $dispatcher->trigger('onValidateAddress', array(((array)$order->billing_address), 'billing'));
+			foreach($results as $result) {
+				if($result === false) {
+					$is_valid = false;
+				}
+			}
+		} elseif ($this->params->get('billto_option',0) == 2) {
 			$is_valid = false;
 		}
 
-		JPluginHelper::importPlugin('donorcart');
-		$dispatcher = JDispatcher::getInstance();
-		$results = $dispatcher->trigger('onValidateAddress', array(((array)$this->_modelObject->record->shipping_address), 'shipping'));
-		foreach($results as $result) {
-			if($result === false) {
-				$is_valid = false;
-			}
-		}
-		$results = $dispatcher->trigger('onValidateAddress', array(((array)$this->_modelObject->record->billing_address), 'billing'));
-		foreach($results as $result) {
-			if($result === false) {
-				$is_valid = false;
-			}
-		}
 
 		//Step 3: confirm the payment - ONLY IF VALID
-		$htmloutput = '';
 		if($is_valid) {
+			$htmloutput = '';
 			$orderdata = array(
-				'donorcart_order_id' => $this->_modelObject->record->donorcart_order_id,
-				'submitted' => 1
+				'donorcart_order_id' => $order->donorcart_order_id,
+				'status' => 'submitted'
 			);
-			JPluginHelper::importPlugin('donorcart');
-			$dispatcher = JDispatcher::getInstance();
-			$results = $dispatcher->trigger('onConfirmOrder', array($this->_modelObject->record, $this->params, $is_valid));
+			$results = $dispatcher->trigger('onConfirmOrder', array($order, $this->params, $is_valid));
 			foreach($results as $result) {
 				if($result === true) {
 					$orderdata['status'] = 'complete';
@@ -499,11 +443,11 @@ class DonorcartControllerCheckout extends FOFController {
 					$htmloutput .= $result;
 				}
 			}
-			$this->_modelObject->save($orderdata);
-		}
+			$ordermodel->save($orderdata);
 
-		if(!empty($htmloutput)) {
-			return $htmloutput;
+			if(!empty($htmloutput)) {
+				return $htmloutput;
+			}
 		}
 
 		return true;
@@ -511,6 +455,8 @@ class DonorcartControllerCheckout extends FOFController {
 
 	protected function _prepareAddress($type, $prefix, &$is_valid) {
 		if(!$is_valid) return false;
+		$ordermodel = $this->getThisModel();
+		$order = $ordermodel->getItem();
 
 		$data = array(
 			'address_type' => JRequest::getString($prefix.'address_type',null),
@@ -525,8 +471,8 @@ class DonorcartControllerCheckout extends FOFController {
 			'zip' => JRequest::getString($prefix.'zip',null),
 			'country' => JRequest::getString($prefix.'country',null)
 		);
-		if($this->_modelObject->record->user_id) {
-			$data['user_id']=$this->_modelObject->record->user_id;
+		if($order->user_id) {
+			$data['user_id']=$order->user_id;
 		}
 
 		JPluginHelper::importPlugin('donorcart');
@@ -541,16 +487,18 @@ class DonorcartControllerCheckout extends FOFController {
 	}
 
 	protected function _lock_addresses() {
-		if($this->_modelObject->record->shipping_address_id && !$this->_modelObject->record->shipping_address->locked) {
+		$order = $this->getThisModel()->getItem();
+
+		if($order->shipping_address_id && !$order->shipping_address->locked) {
 			$shipdata = array(
-				'donorcart_address_id' => $this->_modelObject->record->shipping_address_id,
+				'donorcart_address_id' => $order->shipping_address_id,
 				'locked' => 1
 			);
 			FOFModel::getTmpInstance('addresses','DonorcartModel')->save($shipdata);
 		}
-		if($this->_modelObject->record->billing_address_id && $this->_modelObject->record->billing_address_id != $this->_modelObject->record->shipping_address_id && !$this->_modelObject->record->billing_address->locked) {
+		if($order->billing_address_id && $order->billing_address_id != $order->shipping_address_id && !$order->billing_address->locked) {
 			$billdata = array(
-				'donorcart_address_id' => $this->_modelObject->record->billing_address_id,
+				'donorcart_address_id' => $order->billing_address_id,
 				'locked' => 1
 			);
 			FOFModel::getTmpInstance('addresses','DonorcartModel')->save($billdata);

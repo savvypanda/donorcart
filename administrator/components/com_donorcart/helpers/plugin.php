@@ -91,12 +91,12 @@ class JPluginDonorcart extends JPlugin {
 		$payment_name = $this->getName();
 
 		$data = array(
+			'status' => 'pending',
 			'val1' => 'myval',
 			'val2' => 'myval2',
 			'etc...'
 		);
 		$payment = array(
-			'status' => 'pending',
 			'infohash' => json_encode($data)
 		);
 

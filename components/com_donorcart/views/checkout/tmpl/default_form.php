@@ -22,12 +22,12 @@ if($display_addresses) {
 		'zip' => '',
 		'country' => 'USA'
 	);
-	if($this->order->shipping_address_id && is_object($this->order->shipping_address)) {
-		$shippingaddress = get_object_vars($this->order->shipping_address);
+	if($this->item->shipping_address_id && is_object($this->item->shipping_address)) {
+		$shippingaddress = get_object_vars($this->item->shipping_address);
 		$shipto = array_merge($shipto, $shippingaddress);
 	}
-	if($this->order->billing_address_id && is_object($this->order->billing_address)) {
-		$billingaddress = get_object_vars($this->order->billing_address);
+	if($this->item->billing_address_id && is_object($this->item->billing_address)) {
+		$billingaddress = get_object_vars($this->item->billing_address);
 		$billto = array_merge($billto, $billingaddress);
 	}
 }
@@ -48,7 +48,7 @@ if($display_addresses) {
 		<input type="hidden" name="recurring" value="1" />
 	<?php } elseif($recurring_option==1) { //allow users to decide if they want it to be a recurring or a one-time donation ?>
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_RECURRING')?></h3>
-		<select name="recurring"><option value="0"><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_NO')?></option><option value="1"<?php if($this->order->recurring) echo ' selected="selected"'; ?>><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_YES')?></option></select>
+		<select name="recurring"><option value="0"><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_NO')?></option><option value="1"<?php if($this->item->recurring) echo ' selected="selected"'; ?>><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_YES')?></option></select>
 	<?php } else { //all donations will be one-time donations ?>
 		<input type="hidden" name="recurring" value="0" />
 	<?php } ?>
@@ -58,7 +58,7 @@ if($display_addresses) {
 		<div class="addresses">
 			<?php if($display_both_options): ?>
 				<label for="use_same_address_for_billto"><?=JText::_('COM_DONORCART_HEADING_USE_SAME_ADDRESS_FOR_BOTH')?></label>
-				<input type="checkbox" name="use_same_address_for_billto" value="1"<?php if($this->order->shipping_address_id == $this->order->billing_address_id) echo ' checked="checked"'; ?> />
+				<input type="checkbox" name="use_same_address_for_billto" value="1"<?php if($this->item->shipping_address_id == $this->item->billing_address_id) echo ' checked="checked"'; ?> />
 			<?php endif; ?>
 			<?php if($shipto_option_flag != 0): ?>
 				<div class="shippingaddress">
@@ -84,7 +84,7 @@ if($display_addresses) {
 		<?php
 			JPluginHelper::importPlugin('donorcart');
 			$dispatcher = JDispatcher::getInstance();
-			$results = $dispatcher->trigger('onDisplayPaymentForm', array($this->order, $this->params));
+			$results = $dispatcher->trigger('onDisplayPaymentForm', array($this->item, $this->params));
 			foreach($results as $result):
 				if(is_string($result)) echo $result;
 			endforeach;
@@ -93,10 +93,10 @@ if($display_addresses) {
 
 	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SPECIAL_INSTR')?></h3>
 	<div><label for="special_instr"><?=JText::_('COM_DONORCART_CHECKOUT_SPECIAL_INSTR')?></label>
-		<textarea name="special_instr"><?=$this->order->special_instr?></textarea>
+		<textarea name="special_instr"><?=$this->item->special_instr?></textarea>
 	</div>
 
-	<input type="submit" name="Submit" value="<?=JHtml::_('COM_DONORCART_CHECKOUT_CONTINUE_ACTION')?>" />
+	<input type="submit" name="Submit" value="<?=JText::_('COM_DONORCART_CHECKOUT_CONTINUE_ACTION')?>" />
 	<input type="hidden" name="task" value="submit" />
 	<input type="hidden" name="format" value="raw" />
 	<?php echo JHTML::_('form.token'); ?>

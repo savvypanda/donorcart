@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="2.5.0" method="upgrade">
 	<name>Donor Cart</name>
-	<creationDate>June 2013</creationDate>
+	<creationDate>February 2014</creationDate>
 	<author>Levi Carter</author>
-	<authorEmail>levi@mangotreemedia.com</authorEmail>
-	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<authorEmail>levi@savvypanda.com</authorEmail>
+	<authorUrl>http://savvypanda.com</authorUrl>
 	<copyright></copyright>
 	<license></license>
 	<version>0.2.6</version>
@@ -17,11 +17,8 @@
 
 	<media destination="com_donorcart" folder="media">
 		<filename>index.html</filename>
-		<filename>dcart-javascript.js</filename>
 		<filename>donorcart.js</filename>
 		<filename>donorcart.css</filename>
-		<filename>jquery-ui-1.10.3.js</filename>
-		<filename>jquery-ui-1.10.3.css</filename>
 		<folder>images</folder>
 	</media>
 

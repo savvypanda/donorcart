@@ -1,6 +1,7 @@
 @charset "utf-8";
 /* CSS Document */
 
+/******************* Add to cart form styles *******************/
 form.dcartadd {
 	padding: 10px 10px 10px 15px;
 	background: #EEE;
@@ -72,25 +73,15 @@ form.dcartadd.vanilla label {
 	display:block;
 }
 
-
-
+/******************* Cart styles *******************/
 table.dcart-table {
-	font-size:12px;
-}
-#dcart_target *, table.dcart-table *{
-	margin:0;
-	padding:0;
-}
-#dcart_target fieldset {
-	border:none;
-}
-table.dcart-table {
+	font-size:0.9em;
 	width:100%;
 	border:0;
 	border-collapse:collapse;
 }
 table.dcart-table th, table.dcart-table td {
-	padding: 5px;
+	padding:0;
 	border:0;
 	border-bottom:1px dashed #A6A593;
 	vertical-align:top;
@@ -103,66 +94,46 @@ table.dcart-table tfoot td {
 table.dcart-table td.empty {
 	text-align:center;
 }
-table.dcart-table td.dcart-item-qty {
+td.dcart-item-qty {
 	min-width:20px;
 }
-table.dcart-table span#dcart-subtotal {
+span.dcart-subtotal {
 	display:block;
 	color:#014279;
 	font-size:120%;
 	float:right;
 	font-weight:bold;
 }
-table.dcart-table #dcart-checkout {
+.dcart-cartbuttons {
 	clear:both;
-	float:right;
+	margin-top:10px;
+	text-align:right;
+}
+.dcart-cartbuttons .btn {
+	margin-left:1em;
 }
 
-
-
-
-.checkout fieldset {
-border: 0px solid #A1926E;
-margin-top: 15px;
-padding: 15px;
+/******************* Cart styles *******************/
+#donorcart_checkout_container fieldset {
+	display: block;
+	border: 0px solid #A1926E;
+	margin-top: 15px;
+	padding: 15px;
 }
-
-.checkout fieldset.em {
-    background-color: transparent;
-    }
-.checkout legend {
-margin: 0;
-padding: 0 10px;
-font-weight: bold;
-font-size: 14px;
+#donorcart_checkout_container legend {
+	margin: 0;
+	padding: 0 10px;
+	font-weight: bold;
+	font-size: 14px;
+	display: block;
+	-webkit-padding-start: 2px;
+	-webkit-padding-end: 2px;
+	border: none;
 }
-.checkout legend {
-display: block;
--webkit-padding-start: 2px;
--webkit-padding-end: 2px;
-border: none;
-}
+#donorcart_checkout_container label {float: left; display: block; width: 120px; font-weight: bold;}
+#donorcart_checkout_container .optiondrawer{padding-left: 50px; display:none;}
 
-.checkout div.billingprevious {
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    line-height: 14px;
-    border-bottom: 1px dashed #bbb;
-    }
-
-.checkout label {float: left; display: block; width: 120px; font-weight: bold;}
-.checkout td.label {width: 160px; font-weight:  bold; text-align: right; padding-right: 5px;}
-
-.checkout table.credit_card {width: 630px;}
-.checkout table.credit_card td{width: 470px;}
-.checkout table.credit_card td.label{width: 160px;}
-.checkout table.credit_card img {padding: 5px 0px;}
-
-.checkout fieldset { display: block;}
-
-.checkout .option{padding-left: 50px; display:none;}
-
-tr.cart-row, .cart-table tr th {background: #ddd; color: #444;}
+/* tr.cart-row, .cart-table tr th {background: #ddd; color: #444;} */
 
 #donorcart_checkout_container{display:block;position:relative;zoom:1;z-index:44;}
 .dcart_overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);}

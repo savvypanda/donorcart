@@ -19,25 +19,27 @@ class DonorcartControllerCarts extends FOFController {
 
 	/* protected function onBeforeRead() {
 		return $this->checkACL('cart.view');
-	}
+	} */
 
 	protected function onBeforeRemove() {
-		return $this->checkACL('cart.view');
-	} */
+		return true;
+		//return $this->checkACL('cart.view');
+	}
 
 /*	public function display($cachable = false, $urlparams = false) {
 		parent::display($cachable, $urlparams);
 	} */
 
-	public function getItem($id = null) {
-		return null;
-	}
+	//public function getItem($id = null) {
+	//	return null;
+	//}
 
 	public function _remove_item() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$id = JRequest::getInt('item',null);
 		FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($id);
 		return $this->display();
+		return true;
 	}
 
 
@@ -61,6 +63,7 @@ class DonorcartControllerCarts extends FOFController {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		FOFModel::getAnInstance('carts','DonorcartModel')->emptyCart();
 		return $this->display();
+		return true;
 	}
 
 }

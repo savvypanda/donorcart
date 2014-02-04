@@ -7,7 +7,7 @@ class DonorcartModelOrders extends FOFModel {
 		$user = JFactory::getUser();
 		$session = JFactory::getSession();
 		$input = JFactory::getApplication()->input;
-		$request_id = $input->get('id',false,'INT');
+		$request_id = ($input->get('option')=='com_donorcart' && $input->get('view')=='order')?$input->get('id',false,'INT'):false;
 		$my_id = $request_id?$request_id:$session->get('order_id',0);
 		/* There has to be a better way to get the order than to get it from the cart_id in the constructor
 		if(!$my_id) {
@@ -21,15 +21,16 @@ class DonorcartModelOrders extends FOFModel {
 		$config['id']=$my_id;
 
 		parent::__construct($config);
-		$order = $this->getItem();
 
 		if($request_id) {
-			$viewtoken = $input->get('viewtoken','');
-			if(!$order->viewtoken || $viewtoken != $order->viewtoken) {
-				if(!$user->id || $user->id != $order->user_id) {
-					//Jerror::raiseError(403,'You are not allowed to view that order.');
-					throw new Exception('You are not allowed to view that order', 403);
-					JFactory::getApplication()->redirect('index.php');
+			if($viewtoken = $input->get('viewtoken','')) {
+				$order = $this->getItem();
+				if(!$order->viewtoken || $viewtoken != $order->viewtoken) {
+					if(!$user->id || $user->id != $order->user_id) {
+						//Jerror::raiseError(403,'You are not allowed to view that order.');
+						throw new Exception('You are not allowed to view that order', 403);
+						JFactory::getApplication()->redirect('index.php');
+					}
 				}
 			}
 		}
@@ -63,7 +64,7 @@ class DonorcartModelOrders extends FOFModel {
 		return $subtotal;
 	} */
 
-	public function updateOrderTotal($subtotal = null) {
+	public function updateOrderTotal($subtotal = null, $savetotal = true) {
 		if(!$this->getId()) return false;
 		if(!$subtotal) {
 			$subtotal = $this->record->cart->subtotal;
@@ -71,7 +72,7 @@ class DonorcartModelOrders extends FOFModel {
 		$total = $subtotal;
 		//Todo: If we have more calculations to do, do them here
 
-		if($total != $this->record->order_total) {
+		if($savetotal && $total != $this->record->order_total) {
 			$this->_db->setQuery('UPDATE #__donorcart_orders SET order_total='.$this->_db->quote($total).' WHERE donorcart_order_id='.$this->_db->quote($this->record->donorcart_order_id));
 			$this->_db->query();
 			$this->record->order_total = $total;
@@ -131,7 +132,7 @@ class DonorcartModelOrders extends FOFModel {
 
 		 * Now let's update the order total
 		 */
-		$table->order_total = $this->calcOrderTotal($table);
+		$table->order_total = $this->updateOrderTotal(null, false);
 
 		return true;
 	}
@@ -139,7 +140,7 @@ class DonorcartModelOrders extends FOFModel {
 	protected function onBeforeDelete(&$id, &$table) {
 		//first of all, do not allow an order to be deleted after it has been submitted.
 		$record = $this->getItem($id);
-		if(!is_object($record) || $record->submitted) {
+		if(!is_object($record) || $record->status=='submitted' || $record->status=='complete') {
 			return false;
 		}
 		//also do not allow it to be deleted if the payment has been completed.
@@ -174,17 +175,11 @@ class DonorcartModelOrders extends FOFModel {
 
 	public function createOrder() {
 		$order = $this->getTable();
-		$cart_id = JFactory::getSession()->get('cart_id',0);
-		if(!$cart_id) return false;
-		$cart = FOFModel::getTmpInstance('carts','DonorcartModel')->getItem($cart_id);
-		$subtotal = 0;
-		if(is_array($cart->items)) {
-			foreach($cart->items as $item) {
-				$subtotal += $item->qty * $item->price;
-			}
-		}
+		$cartmodel = FOFModel::getAnInstance('carts','DonorcartModel');
+		if(!$cart_id = $cartmodel->getId()) return false;
+		$cart = $cartmodel->getItem();
 
-		$data = array('cart_id' => $cart_id, 'order_total' => $subtotal);
+		$data = array('cart_id' => $cart_id, 'order_total' => $cart->subtotal);
 		$user = JFactory::getUser();
 		if($user->id) {
 			$data['user_id'] = $user->id;

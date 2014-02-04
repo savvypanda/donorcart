@@ -60,7 +60,10 @@ class DonorcartModelCarts extends FOFModel {
 		} else {
 			//We need to make sure it's not part of a submitted order
 			$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
-			if($ordermodel->getid() && $ordermodel->getItem()->submitted) return false;
+			if($ordermodel->getid()) {
+				$order = $ordermodel->getItem();
+				if($order->status == 'submitted' || $order->status == 'complete') return false;
+			}
 		}
 		$this->getItem();
 		$price = doubleval($price);
@@ -114,7 +117,10 @@ class DonorcartModelCarts extends FOFModel {
 		}
 		//Before modifying the cart, we need to make sure it's not part of a submitted order
 		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
-		if($ordermodel->getid() && $ordermodel->getItem()->submitted) return false;
+		if($ordermodel->getid()) {
+			$order = $ordermodel->getItem();
+			if($order->status=='submitted' || $order->status=='complete') return false;
+		}
 
 		$this->getItem();
 		$subtotal = 0;
@@ -141,7 +147,7 @@ class DonorcartModelCarts extends FOFModel {
 			}
 		} else {
 			//we need to update the cart subtotal and the order total (if applicable)
-			$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).' WHERE donorcart_cart_id='.$this->_db->quote($cart_id);
+			$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).' WHERE donorcart_cart_id='.$this->_db->quote($this->id);
 			$this->_db->setQuery($query);
 			$this->_db->query();
 
@@ -158,7 +164,8 @@ class DonorcartModelCarts extends FOFModel {
 		if(!$this->id) return true;
 		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		if($ordermodel->getid()) {
-			if($ordermodel->getItem()->submitted) {
+			$order = $ordermodel->getItem();
+			if($order->status=='submitted' || $order->status=='complete') {
 				return false;
 			} else {
 				return $ordermodel->delete();

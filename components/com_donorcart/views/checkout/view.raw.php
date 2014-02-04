@@ -4,13 +4,12 @@ class DonorcartViewCheckout extends FOFViewHtml {
 	public function display($tpl = null) {
 		$user = JFactory::getUser();
 		$layout = $this->getLayout();
-		//$model = $this->getModel();
-		//$model->setState('task','read');
+
 		//$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		//$order = $ordermodel->getItem();
-		//$ordermodel->calcOrderTotal($order);
 		//$document = JFactory::getDocument();
 		//$document->setTitle(JText::_('COM_DONORCART_CHECKOUT_PAGE_TITLE'));
+
 		if(empty($this->params)) {
 			$this->assign('params',JComponentHelper::getParams('com_donorcart'));
 		}
