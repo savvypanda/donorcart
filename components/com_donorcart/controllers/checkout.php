@@ -71,14 +71,6 @@ class DonorcartControllerCheckout extends FOFController {
 		$this->display();
 	}
 
-	/* protected function onBeforeRead() {
-		return $this->checkACL('cart.checkout');
-	}
-
-	protected function onBeforeRemove() {
-		return $this->checkACL('cart.view');
-	} */
-
 	/* This function is based on the J2.5 Users component code. Alter at your risk */
 	// TODO: Replace login, logout, and register functionality in component with user plugins to handle the user data on pending orders
 	public function _login() {
@@ -292,8 +284,8 @@ class DonorcartControllerCheckout extends FOFController {
 		}
 
 		//Now that we know what we are doing. Let's do it!
-		//saving the shipping address
-		if($shipto_id==0 || $update_shipping) { //new or updated address
+		//saving the shipping address (if applicable)
+		if(!is_null($shipto_id)) {
 			$shipdata = $this->_prepareAddress('shipping','ship_',$is_valid);
 			if($shipto_id) $shipdata['donorcart_address_id'] = $shipto_id;
 
@@ -307,7 +299,7 @@ class DonorcartControllerCheckout extends FOFController {
 		$orderdata['shipping_address_id']=$shipto_id;
 
 		//saving the billing address
-		if($billto_id==0 || $update_billing) { //new or updated address
+		if(!is_null($billto_id)) {
 			$billdata = $this->_prepareAddress('billing','bill_',$is_valid);
 			if($billto_id) $billdata['donorcart_address_id'] = $billto_id;
 
@@ -343,6 +335,7 @@ class DonorcartControllerCheckout extends FOFController {
 				$is_valid = false;
 				JFactory::getApplication()->enqueueMessage($payment_model->getError(), 'error');
 			}
+			$orderdata['payment_name'] = $payment_name;
 			$orderdata['payment_id'] = $payment_model->getId();
 		} else {
 			$is_valid = false;

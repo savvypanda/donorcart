@@ -2,6 +2,16 @@
 
 $display_cart = isset($this->display_cart)?$this->display_cart:($this->params->get('display_cart') == 1);
 
+$params = JComponentHelper::getParams('com_donorcart');
+if($params->get('load_jquery')) {
+	JHtml::_('jquery.framework');
+}
+if($uiversion = $params->get('jqueryui_version')) {
+	JFactory::getDocument()->addScript('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/jquery-ui.min.js');
+	if($uitheme = $params->get('jquerui_theme')) {
+		JFactory::getDocument()->addStyleSheet('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/themes/'.$uitheme.'/jquery-ui.min.css');
+	}
+}
 FOFTemplateUtils::addCSS('media://com_donorcart/donorcart.css');
 FOFTemplateUtils::addJS('media://com_donorcart/donorcart.js');
 

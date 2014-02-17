@@ -9,6 +9,10 @@ class DonorcartModelCarts extends FOFModel {
 		parent::__construct($config);
 	}
 
+	public function setIDsFromRequest(){
+		return $this;
+	}
+
 	protected function onAfterGetItem(&$record) {
 		parent::onAfterGetItem($record);
 		if($record->donorcart_cart_id) {

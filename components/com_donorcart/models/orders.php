@@ -38,6 +38,10 @@ class DonorcartModelOrders extends FOFModel {
 		$this->setState('status','complete');
 	}
 
+	public function setIDsFromRequest(){
+		return $this;
+	}
+
 	/* private function getOrderIdFromCartId($cart_id) {
 		$query = 'SELECT donorcart_order_id FROM #__donorcart_orders WHERE cart_id='.$this->_db->quote($cart_id);
 		$this->_db->setQuery($query);

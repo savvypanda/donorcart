@@ -14,4 +14,15 @@
 		<filename plugin="free">free.php</filename>
 		<filename>index.html</filename>
 	</files>
+
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="active" type="list" label="Active" default="0" description="Whether or not to accept new payments through this payment method">
+					<option value="0">Inactive</option>
+					<option value="1">Active</option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
 </extension>

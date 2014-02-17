@@ -1,34 +1,28 @@
 <?php defined('_JEXEC') or die('Restricted Access');
+require_once(JPATH_SITE.DIRECTORY_SEPARATOR.'administrator'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'com_donorcart'.DIRECTORY_SEPARATOR.'helpers'.DIRECTORY_SEPARATOR.'plugin.php');
 
-class plgDonorcartFree extends JPlugin {
+class plgDonorcartFree extends JPluginDonorcart {
+	protected $_name = 'free';
 
-	public function onBeforePayment($order, $plugin_validated) {
-		if($plugin_validated) return false;
-		$plugin_validated = 'free';
+	public function onSubmitOrder($order, $params, $payment_name) {
+		if(!empty($payment_name) && $payment_name != $this->getName()) return;
+		return array(
+			'payment_type' => 'free',
+			'infohash' => ''
+		);
+	}
+
+	public function onConfirmOrder($order, $params, $is_valid) {
+		if($order->payment_name != $this->getName()) return;
 		return true;
 	}
-	public function onPayment($order, $is_valid, $plugin_validated) {
-		if($is_valid && $plugin_validated=='free') {
-			$paymentmodel = FOFModel::getTmpInstance('payment','DonorcartModel');
-			$data = array(
-				'payment_type' => 'free',
-				'infohash' => ''
-			);
-			$user = JFactory::getUser();
-			if($user->id) {
-				$data['user_id'] = $user->id;
-			}
-			$paymentmodel->save($data);
-			return $paymentmodel->getId();
-		}
-	}
 
-	public function onDisplayPaymentForm($order) {
+	public function onDisplayPaymentForm($order, $params) {
 		return '<div><p><strong>Payment</strong>: This is a free payment. You do not have to enter any information for this.</p>';
 	}
 
-	public function onDisplayPaymentInfo($order) {
-		if($order->payment_id && is_object($order->payment) && $order->payment->payment_type=='free') {
+	public function onDisplayPaymentInfo($order, $params, $payment_name) {
+		if($payment_name==$this->getName() && $order->payment_id) {
 			return '<div><p>Payment: <strong>FREE!</strong></p></div>';
 		}
 	}

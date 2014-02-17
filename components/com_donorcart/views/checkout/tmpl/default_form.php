@@ -80,16 +80,36 @@ if($display_addresses) {
 	<?php endif; ?>
 
 	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_PAYMENT')?></h3>
-	<div>
-		<?php
-			JPluginHelper::importPlugin('donorcart');
-			$dispatcher = JDispatcher::getInstance();
-			$results = $dispatcher->trigger('onDisplayPaymentForm', array($this->item, $this->params));
-			foreach($results as $result):
-				if(is_string($result)) echo $result;
-			endforeach;
-		?>
-	</div>
+	<div><?php
+		JPluginHelper::importPlugin('donorcart');
+		$dispatcher = JDispatcher::getInstance();
+		$paymentSelectorResults = $dispatcher->trigger('onDisplayPaymentSelector', array($this->item, $this->params));
+		$paymentFormResults = $dispatcher->trigger('onDisplayPaymentForm', array($this->item, $this->params));
+		$numPayments = count($paymentSelectorResults);
+		if(count($paymentFormResults) != $numPayments) { ?>
+			<h4><?=JText::_('COM_DONORCART_CHECKOUT_NO_PAYMENT_AVAILABLE');?></h4>
+		<?php } else {
+			for($i = 0; $i < $numPayments; $i++) {
+				if(!$paymentSelectorResults[$i]) {
+					unset($paymentSelectorResults[$i]);
+					unset($paymentFormResults[$i]);
+				}
+			}
+			$numPayments = count($paymentSelectorResults);
+			if($numPayments == 0) { ?>
+				<h4><?=JText::_('COM_DONORCART_CHECKOUT_NO_PAYMENT_AVAILABLE');?></h4>
+			<?php } elseif($numPayments == 1) { ?>
+				<input type="hidden" name="payment_method" value="<?=reset($paymentSelectorResults)?>" /><div><?=reset($paymentFormResults)?></div>
+			<?php } else {
+				$selector_html = '';
+				$forms_html = '';
+				foreach($paymentSelectorResults as $i => $name) {
+					$selector_html .= '<div class="dcart_payment_method_selection"><label for="payment_method">'.$name.'</label><input type="radio" name="payment_method" value='.$name.' /></div>';
+					$forms_html .='<div class="dcart_payment_method_form '.$name.'">'.$paymentFormResults[$i].'</div>';
+				}
+			}
+		}
+	?></div>
 
 	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SPECIAL_INSTR')?></h3>
 	<div><label for="special_instr"><?=JText::_('COM_DONORCART_CHECKOUT_SPECIAL_INSTR')?></label>

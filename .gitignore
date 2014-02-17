@@ -106,7 +106,7 @@
 !plugins/donorcart/testhelp/
 !plugins/donorcart/testhelp/*
 
-# Ignore miscelaneous index.html and index.php files
+# Ignore miscellaneous index.html and index.php files
 components/index.html
 administrator/index.html
 administrator/index.php

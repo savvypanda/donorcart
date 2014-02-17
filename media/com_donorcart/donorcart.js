@@ -19,7 +19,7 @@
 
 		if(postdata != false) {
 			//if we have anything to post, use a post request
-			settings = {url: target, type: 'POST', data: postdata};
+			var settings = {url: target, type: 'POST', data: postdata};
 			$.ajax(settings).done(function(data){
 				//if the request was successful, replace the cart with the updated cart
 				$(dcart_target).html(data);
@@ -31,7 +31,7 @@
 						//ask the user if they would like to proceed to checkout
 						var dialogbuttons = {};
 						dialogbuttons[Joomla.JText._('COM_DONORCART_JS_PROCEED_TO_CHECKOUT','Check Out')] = function() {
-							$('form[name=dcart_cart]').submit();
+							window.location='index.php?option=com_donorcart';
 							$(this).dialog("close");
 						};
 						dialogbuttons[Joomla.JText._('COM_DONORCART_JS_CONTINUE_SHOPPING','Add Another Donation')] = function() {
@@ -108,6 +108,12 @@
 		}
 		$('input[type=radio][name=shipto_id],input[type=radio][name=billto_id]').change(togglenewaddress).not(':checked').parent().find('.optiondrawer').slideUp();
 
+		function changepaymentmethod(newmethod) {
+			$('.dcart_payment_method_form').slideUp().hasClass(newmethod).slideDown();
+		}
+		$('#donorcart_checkout_form input[name=payment_method]').change(function(){changepaymentmethod($(this).val())});
+
+
 		$(document).delegate('a.dcart-link', 'click', function () {
 			dcartLoader($(this).attr('href'));
 			return false;
@@ -119,7 +125,7 @@
 		})
 
 		$('form.donorcart_action_form').submit(function() {
-			settings = {url: this.action, type: 'POST', data: $(this).serialize()};
+			var settings = {url: this.action, type: 'POST', data: $(this).serialize()};
 			$('#donorcart_checkout_container').append('<div class="dcart_overlay"><div class="dcart_overlay_inner">Loading...</div></div>');
 			$.ajax(settings).done(function(data){
 				$('#donorcart_checkout_container').replaceWith(data);
@@ -127,6 +133,7 @@
 				$('#donorcart_checkout_container').remove('.dcart_overlay');
 				alert('There was an error processing your request. Please review the checkout form and try again. If the problem persists after refreshing the page, contact the website administrator for assistance.');
 			});
+			return false;
 		});
 	});
 })(jQuery);

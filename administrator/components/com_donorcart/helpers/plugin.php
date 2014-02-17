@@ -37,11 +37,10 @@ class JPluginDonorcart extends JPlugin {
 	 * @param Object $order The donorcartModelOrders object containing the current order
 	 * @param Object $params The com_donorcart JParams object
 	 *
-	 * @return boolean|string False if this payment plugin can't or shouldn't process this order. True for a generic selector.
-	 * 						  The HTML for the selection list if the plugin can process this order and you don't just want the name.
+	 * @return boolean|string False if this payment plugin can't or shouldn't process this order. The name of the payment plugin if it can.
 	 */
 	public function onDisplayPaymentSelector($order, $params) {
-		return $this->isActive();
+		return $this->isActive()?$this->getName():false;
 	}
 
 	/*
