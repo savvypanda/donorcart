@@ -7,6 +7,8 @@ class DonorcartControllerCarts extends FOFController {
 		$this->registerTask('remove','_remove_item');
 		$this->registerTask('addItem','_add_item');
 		$this->registerTask('empty','_empty_cart');
+		$this->registerTask('setRecurring','_enable_recurring');
+		$this->registerTask('setNoRecurring','_disable_recurring');
 	}
 
 	public function execute($task) {
@@ -50,12 +52,23 @@ class DonorcartControllerCarts extends FOFController {
 		$price = JRequest::getFloat('my-item-price',null);
 		$qty = JRequest::getInt('my-item-qty',1);
 		$url = JRequest::getString('my-item-url','');
+		$img = JRequest::getString('my-item-img','');
+		$recurring = JRequest::getBool('recurring',false);
 		if(empty($sku) || empty($name) || empty($price)) {
 			//JError::raiseError(500,'Invalid product.<br />Sku = '.$sku.'<br />Name='.$name.'<br />Price='.$price);
 			JFactory::getApplication()->enqueueMessage('Invalid product.<br />Sku = '.$sku.'<br />Name='.$name.'<br />Price='.$price, 'error');
 		} else {
-			FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($sku, $name, $price, $qty, $url);
+			FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($sku, $name, $price, $qty, $url, $img, $recurring);
 		}
+		return $this->display();
+	}
+
+	public function _enable_recurring() {
+		FOFModel::getAnInstance('carts','DonorcartModel')->enableRecurring();
+		return $this->display();
+	}
+	public function _disable_recurring() {
+		FOFModel::getAnInstance('carts','DonorcartModel')->disableRecurring();
 		return $this->display();
 	}
 
@@ -63,7 +76,5 @@ class DonorcartControllerCarts extends FOFController {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		FOFModel::getAnInstance('carts','DonorcartModel')->emptyCart();
 		return $this->display();
-		return true;
 	}
-
 }

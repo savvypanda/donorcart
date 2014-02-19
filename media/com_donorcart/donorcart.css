@@ -3,7 +3,7 @@
 
 /******************* Add to cart form styles *******************/
 form.dcartadd {
-	padding: 10px 10px 10px 15px;
+	padding: 10px 10px 0 15px;
 	background: #EEE;
 	border-radius: 15px;
 	border: 1px solid #CCC;
@@ -14,7 +14,7 @@ form.dcartadd h3 {
 }
 .dcart-item-image, .dcart-item-form, .dcart-static, .dcart-editable, .dcart-selectlist, .item-price-selector, .item-qty-selector, .dcart-item-add-button {
 	float:left;
-	margin:0 15px 0 0;
+	margin:0 15px 10px 0;
 }
 .dcart-item-image {
 	max-width:33%;
@@ -23,6 +23,12 @@ form.dcartadd label {
 	display:inline-block;
 }
 form.dcartadd input {
+	margin:0;
+}
+form.dcartadd input.dcart-add-recurring {
+	margin-left:10px;
+}
+form.dcartadd select {
 	margin:0;
 }
 span.cart-item-name {

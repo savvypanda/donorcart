@@ -6,14 +6,15 @@ class plgDonorcartFree extends JPluginDonorcart {
 
 	public function onSubmitOrder($order, $params, $payment_name) {
 		if(!empty($payment_name) && $payment_name != $this->getName()) return;
+		$payment_name=$this->getName();
 		return array(
-			'payment_type' => 'free',
+			'payment_type' => $payment_name,
 			'infohash' => ''
 		);
 	}
 
 	public function onConfirmOrder($order, $params, $is_valid) {
-		if($order->payment_name != $this->getName()) return;
+		if($order->payment_name != $this->getName() || !$is_valid) return;
 		return true;
 	}
 

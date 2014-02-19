@@ -122,7 +122,12 @@
 		$('form.dcartadd').submit(function() {
 			dcartLoader($(this).attr('href'), $(this).serialize(), $(this).hasClass('dnoprompt')?'skip':true);
 			return false;
-		})
+		});
+		$('form.dcartadd input[name=recurring-add-button]').click(function(){
+			this.form.recurring=1;
+			this.form.submit();
+			return false;
+		});
 
 		$('form.donorcart_action_form').submit(function() {
 			var settings = {url: this.action, type: 'POST', data: $(this).serialize()};

@@ -52,7 +52,7 @@ class JPluginDonorcart extends JPlugin {
 	 * @return string The HTML for the payment form
 	 */
 	public function onDisplayPaymentForm($order, $params) {
-		die('You must define the onDisplayPaymentForm function in your plugin.');
+		return;
 	}
 
 	/*
@@ -114,7 +114,7 @@ class JPluginDonorcart extends JPlugin {
 	 * 						  	   The HTML to redirect the user to the payment gateway if more details must be collected (eg: credit card info, etc...)
 	 */
 	public function onConfirmOrder($order, $params, $is_valid) {
-		if($order->payment_name != $this->getName()) return;
+		if($order->payment_name != $this->getName() || !$is_valid) return;
 		die('You must define the onConfirmOrder function in your plugin.');
 
 		//example code for this function

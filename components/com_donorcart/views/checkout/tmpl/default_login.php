@@ -1,7 +1,7 @@
 <?php defined('_JEXEC') or die("Restricted Access"); ?>
 <form action="<?php echo JRoute::_('index.php?option=com_donorcart'); ?>" method="post">
 	<fieldset>
-		<label><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_LOGIN_TO_CONTINUE')?></label>
+		<legend><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_LOGIN_TO_CONTINUE')?></legend>
 		<div class="field">
 			<label for="username"><?php echo JText::_('COM_DONORCART_CHECKOUT_USERNAME') ?></label><br />
 			<input name="username" id="username" type="text" class="inputbox" alt="username" size="18" />

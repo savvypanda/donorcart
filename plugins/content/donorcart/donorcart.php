@@ -1,6 +1,13 @@
 <?php defined('_JEXEC') or die('Restricted Access');
 
 class plgContentDonorcart extends JPlugin {
+	private $componentParams;
+
+	public function __construct(&$subject, $config=array()){
+		parent::__construct($subject, $config);
+		$this->componentParams = JComponentHelper::getParams('com_donorcart');
+	}
+
 	public function onContentPrepare($context, &$row, &$params, $page) {
 		if (is_object($row)) {
 			return $this->_prepareContent($row->text, $params);
@@ -47,6 +54,7 @@ class plgContentDonorcart extends JPlugin {
 			'nameplaceholder' => false,
 			'qtyplaceholder' => false,
 			'priceplaceholder' => false,
+			'recurringlabel' => '',
 			'submit' => 'Give',
 		);
 
@@ -62,6 +70,7 @@ class plgContentDonorcart extends JPlugin {
 				case 'url':
 				case 'img':
 				case 'submitlabel':
+				case 'recurringlabel':
 				case 'classname':
 				case 'pricelabel':
 				case 'namelabel':
@@ -98,6 +107,7 @@ class plgContentDonorcart extends JPlugin {
 		if(!$options['sku']) {
 			return false;
 		}
+		$unique_form_id = uniqid();
 
 		if(!$options['name']) {
 			$options['editname'] = true;
@@ -143,6 +153,7 @@ class plgContentDonorcart extends JPlugin {
 			if($options['url']) {
 				$parts[] = '<a href="'.JRoute::_($options['url']).'">';
 			}
+			$parts[] = '<input type="hidden" name="my-item-img" value="'.htmlentities($options['img']).'">';
 			$parts[] = '<img src="'.htmlentities($options['img'], ENT_COMPAT).'" alt="'.htmlentities($options['name'], ENT_COMPAT).'" />';
 			if($options['url']) {
 				$parts[] = '</a>';
@@ -155,14 +166,15 @@ class plgContentDonorcart extends JPlugin {
 			$parts[] = '<div class="dcart-item-name dcart-editable">';
 			if(!empty($options['namelabel'])) $parts[] = '<label for="my-item-name">'.JText::_($options['namelabel']).': </label>';
 			$parts[] = '<input type="text" name="my-item-name" '.(($options['nameplaceholder'])?'placeholder':'value').'="'.htmlentities($options['name'], ENT_COMPAT).'" class="input-full">';
+			$parts[] = '</div>';
 		} else {
-			$parts[] = '<div class="dcart-item-name dcart-static">';
 			if(!$options['hidename']) {
+				$parts[] = '<div class="dcart-item-name dcart-static">';
 				$parts[] = '<span class="cart-item-name">'.$options['name'].'</span>';
+				$parts[] = '</div>';
 			}
 			$parts[] = '<input type="hidden" name="my-item-name" value="'.htmlentities($options['name'], ENT_COMPAT).'">';
 		}
-		$parts[] = '</div>';
 
 		if(!empty($options['priceoptions'])) {
 			$parts[] = '<div class="dcart-item-price dcart-selectlist">';
@@ -231,8 +243,13 @@ class plgContentDonorcart extends JPlugin {
 			$parts[] = '<input type="hidden" name="my-item-url" value="'.htmlentities($options['url'], ENT_COMPAT).'">';
 		}
 
-		$parts[] = '<div class="dcart-item-add-button"><input type="submit" name="my-add-button" class="dcart-add-button" value="'.JText::_($options['submitlabel']).'"></div>';
-		$parts[] = '</div>';
+		$parts[] = '<div class="dcart-item-add-button">';
+		$parts[] = '<input type="submit" name="my-add-button" class="dcart-add-button" value="'.JText::_($options['submitlabel']).'">';
+		if($options['recurringlabel'] && $this->componentParams->get('allow_recurring_donations',0)==1) {
+			$parts[] = '<input type="button" name="recurring-add-button" class="dcart-add-button dcart-add-recurring" value="'.JText::_($options['recurringlabel']).'">';
+			$parts[] = '<input type="hidden" name="recurring" value="0">';
+		}
+		$parts[] = '</div></div>';
 		$parts[] = '<div class="clear"></div>';
 		$parts[] = '</form>';
 

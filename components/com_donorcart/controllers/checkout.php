@@ -13,6 +13,8 @@ class DonorcartControllerCheckout extends FOFController {
 
 		$this->registerTask('remove','_remove_item');
 		$this->registerTask('emptyCart','_empty_cart');
+		$this->registerTask('setRecurring','_enable_recurring');
+		$this->registerTask('setNoRecurring','_disable_recurring');
 
 		$this->registerTask('submit','_submit');
 		$this->registerTask('confirm','_confirm');
@@ -78,7 +80,6 @@ class DonorcartControllerCheckout extends FOFController {
 
 		$mainframe = JFactory::getApplication();
 		$session = JFactory::getSession();
-		$session->set('guestcheckout',null);
 
 		if($return = JRequest::getString('return', '')) {
 			$return = base64_decode($return);
@@ -107,21 +108,14 @@ class DonorcartControllerCheckout extends FOFController {
 
 	public function _logout() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
-		//if(is_object($this->_modelObject->record) && !empty($this->_modelObject->record->donorcart_order_id)) {
-			//if(FOFModel::getAnInstance('orders','DonorcartModel')->removeUserData(null, false, 'cart')) {
-			if($this->getThisModel()->removeUserData(null, false, 'cart')) {
-				$session = JFactory::getSession();
-				$cartid = $session->get('cart_id',null);
-				$orderid = $session->set('order_id',null);
-				JFactory::getApplication()->logout();
-				$session->restart();
-				$session->set('cart_id',$cartid);
-				$session->set('order_id',$orderid);
-			} else {
-				return false;
-			}
-		//}
-		return true;
+		$session = JFactory::getSession();
+		$cartid = $session->get('cart_id',null);
+		$orderid = $session->set('order_id',null);
+		JFactory::getApplication()->logout();
+		$session->restart();
+		$session->set('cart_id',$cartid);
+		$session->set('order_id',$orderid);
+		return $this->getThisModel()->removeUserData(null, false, 'cart', $session->getId());
 	}
 
 	public function _register() {
@@ -220,6 +214,15 @@ class DonorcartControllerCheckout extends FOFController {
 		return true;
 	}
 
+	public function _enable_recurring() {
+		return FOFModel::getAnInstance('carts','DonorcartModel')->enableRecurring();
+		return true;
+	}
+	public function _disable_recurring() {
+		FOFModel::getAnInstance('carts','DonorcartModel')->disableRecurring();
+		return true;
+	}
+
 	public function _empty_cart() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		return $this->getThisModel()->delete();
@@ -252,7 +255,26 @@ class DonorcartControllerCheckout extends FOFController {
 		}
 
 		// ************************************
-		//Step 1: save the addresses (if present)
+		//Step 2: Record the recurring options and special instructions
+		switch($this->params->get('allow_recurring_donations',0)){
+			case 1: //the user can decide if they want their donation to be recurring
+				$recurring = (int) JRequest::getBool('recurring',false);
+				break;
+			case 2: //all donations are recurring
+				$recurring = 1;
+				break;
+			default: //all donations are one-time
+				$recurring = 0;
+				break;
+		}
+		if($recurring != $order->cart->recurring) {
+			$this->db->setQuery('UPDATE #__donorcart_carts SET recurring='.$recurring.' WHERE donorcart_cart_id='.$order->cart->donorcart_cart_id);
+			$this->db->query();
+			$order->cart->recurring = $recurring;
+		}
+		$orderdata['special_instr'] = JRequest::getString('special_instr','');
+
+		//Step 3: save the addresses (if present)
 		//first we need to include some logic to determine:
 		//A) If we are saving new addresses
 		//B) If we are updating existing addresses
@@ -313,7 +335,7 @@ class DonorcartControllerCheckout extends FOFController {
 		$orderdata['billing_address_id']=$billto_id;
 
 
-		//Step 2: save the payment details
+		//Step 4: save the payment details
 		JPluginHelper::importPlugin('donorcart');
 		$dispatcher = JDispatcher::getInstance();
 		$payment_name = JRequest::getVar('payment_method','');
@@ -341,12 +363,12 @@ class DonorcartControllerCheckout extends FOFController {
 			$is_valid = false;
 		}
 
-		//Step 3: Save the order.
+		//Step 5: Save the order.
 		$ordermodel->save($orderdata);
 
 		if($is_valid) {
 			if($this->params->get('review_option')==0) {
-				//Step 4: Submit the order (ONLY IF VALID AND THE COMPONENT PARAMETERS SPECIFY NO REVIEW STEP)
+				//Step 6: Submit the order (ONLY IF VALID AND THE COMPONENT PARAMETERS SPECIFY NO REVIEW STEP)
 				$htmloutput = '';
 				$order = $ordermodel->reset()->setId($order_id)->getItem(); //refresh the order in case it was modified since the beginning of the submit function
 				$orderdata = array(
@@ -370,7 +392,7 @@ class DonorcartControllerCheckout extends FOFController {
 					return $htmloutput;
 				}
 			} else {
-				//Step 4 Alternate: set the layout to 'review' (ONLY IF THE ORDER IS VALID)
+				//Step 6 Alternate: set the layout to 'review' (ONLY IF THE ORDER IS VALID)
 				$this->layout = 'review';
 			}
 		}

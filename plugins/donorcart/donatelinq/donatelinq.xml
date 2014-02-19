@@ -31,11 +31,7 @@
 					<option value="1">Yes</option>
 				</field-->
 			</fieldset>
-			<fieldset name="recurring" label="Recurring Payments" description="Select the allowed automated donation frequencies">
-				<field name="recur_onetime" type="list" default="1" label="Allow One-Time Payments">
-					<option value="0">No</option>
-					<option value="1">Yes</option>
-				</field>
+			<fieldset name="recurring" label="Recurring Payments" description="If recurring donations have been enabled, select the allowed automated recurring donation frequencies.">
 				<field name="recur_twoweeks" type="list" default="0" label="Allow 2 Weeks Payments">
 					<option value="0">No</option>
 					<option value="1">Yes</option>

@@ -49,14 +49,14 @@ class DonorcartModelCarts extends FOFModel {
 		} else {
 			$data['session_id'] = $session->getId();
 		}
-		if(!$cart->store($data)) {
+		if(!$cart->bind($data) || !$cart->store()) {
 			return false;
 		};
 		$session->set('cart_id',$cart->donorcart_cart_id);
 		return $this->setId($cart->donorcart_cart_id);
 	}
 
-	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '') {
+	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '', $img = '', $recurring = false) {
 		if(!$this->id) {
 			//if we do not already have a cart, create one and then proceed
 			$this->createEmptyCart();
@@ -91,20 +91,21 @@ class DonorcartModelCarts extends FOFModel {
 
 		if(!$itemadded) {
 			//We are adding a new item to the cart
-			$query = sprintf('INSERT INTO #__donorcart_cart_items(`cart_id`, `sku`, `name`, `price`, `qty`, `url`) VALUES (%s, %s, %s, %s, %s, %s)',
+			$query = sprintf('INSERT INTO #__donorcart_cart_items(`cart_id`, `sku`, `name`, `price`, `qty`, `url`, `img`) VALUES (%s, %s, %s, %s, %s, %s, %s)',
 				$this->_db->quote($this->id),
 				$this->_db->quote($sku),
 				$this->_db->quote($name),
 				$this->_db->quote($price),
 				$this->_db->quote($qty),
-				$this->_db->quote($url)
+				$this->_db->quote($url),
+				$this->_db->quote($img)
 			);
 			$this->_db->setQuery($query);
 			$this->_db->query();
 			//$this->record->items[] = $item;
 			$subtotal += $qty * $price;
 		}
-		$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).' WHERE donorcart_cart_id='.$this->id;
+		$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).($recurring?', recurring=1':'').' WHERE donorcart_cart_id='.$this->id;
 		$this->_db->setQuery($query);
 		$this->_db->query();
 		//$this->record->subtotal = $subtotal;
@@ -161,6 +162,40 @@ class DonorcartModelCarts extends FOFModel {
 			}
 		}
 
+		return true;
+	}
+
+	public function enableRecurring() {
+		//if we do not already have a cart, calling this function on an empty cart is pointless
+		if(!$this->id) return false;
+
+		//We need to make sure it's not part of a submitted order
+		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
+		if($ordermodel->getid()) {
+			$order = $ordermodel->getItem();
+			if($order->status == 'submitted' || $order->status == 'complete') return false;
+		}
+
+		$query = 'UPDATE #__donorcart_carts SET recurring=1 WHERE donorcart_cart_id='.$this->id;
+		$this->_db->setQuery($query);
+		$this->_db->query();
+		return true;
+	}
+
+	public function disableRecurring() {
+		//if we do not already have a cart, calling this function on an empty cart is pointless
+		if(!$this->id) return false;
+
+		//We need to make sure it's not part of a submitted order
+		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
+		if($ordermodel->getid()) {
+			$order = $ordermodel->getItem();
+			if($order->status == 'submitted' || $order->status == 'complete') return false;
+		}
+
+		$query = 'UPDATE #__donorcart_carts SET recurring=0 WHERE donorcart_cart_id='.$this->id;
+		$this->_db->setQuery($query);
+		$this->_db->query();
 		return true;
 	}
 

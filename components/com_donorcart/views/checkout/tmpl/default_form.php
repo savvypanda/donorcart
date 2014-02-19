@@ -44,17 +44,8 @@ if($display_addresses) {
 		</fieldset>
 	<?php endif; ?>
 
-	<?php if($recurring_option==2) { //all donations have to be recurring donations ?>
-		<input type="hidden" name="recurring" value="1" />
-	<?php } elseif($recurring_option==1) { //allow users to decide if they want it to be a recurring or a one-time donation ?>
-		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_RECURRING')?></h3>
-		<select name="recurring"><option value="0"><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_NO')?></option><option value="1"<?php if($this->item->recurring) echo ' selected="selected"'; ?>><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_YES')?></option></select>
-	<?php } else { //all donations will be one-time donations ?>
-		<input type="hidden" name="recurring" value="0" />
-	<?php } ?>
-
 	<?php if($display_addresses): ?>
-		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_ADDRESSES')?></h3>
+		<h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_ADDRESSES')?></h4>
 		<div class="addresses">
 			<?php if($display_both_options): ?>
 				<label for="use_same_address_for_billto"><?=JText::_('COM_DONORCART_HEADING_USE_SAME_ADDRESS_FOR_BOTH')?></label>
@@ -79,42 +70,54 @@ if($display_addresses) {
 		</div>
 	<?php endif; ?>
 
-	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_PAYMENT')?></h3>
-	<div><?php
-		JPluginHelper::importPlugin('donorcart');
-		$dispatcher = JDispatcher::getInstance();
-		$paymentSelectorResults = $dispatcher->trigger('onDisplayPaymentSelector', array($this->item, $this->params));
-		$paymentFormResults = $dispatcher->trigger('onDisplayPaymentForm', array($this->item, $this->params));
-		$numPayments = count($paymentSelectorResults);
-		if(count($paymentFormResults) != $numPayments) { ?>
-			<h4><?=JText::_('COM_DONORCART_CHECKOUT_NO_PAYMENT_AVAILABLE');?></h4>
-		<?php } else {
-			for($i = 0; $i < $numPayments; $i++) {
-				if(!$paymentSelectorResults[$i]) {
-					unset($paymentSelectorResults[$i]);
-					unset($paymentFormResults[$i]);
-				}
-			}
-			$numPayments = count($paymentSelectorResults);
-			if($numPayments == 0) { ?>
-				<h4><?=JText::_('COM_DONORCART_CHECKOUT_NO_PAYMENT_AVAILABLE');?></h4>
-			<?php } elseif($numPayments == 1) { ?>
-				<input type="hidden" name="payment_method" value="<?=reset($paymentSelectorResults)?>" /><div><?=reset($paymentFormResults)?></div>
-			<?php } else {
-				$selector_html = '';
-				$forms_html = '';
-				foreach($paymentSelectorResults as $i => $name) {
-					$selector_html .= '<div class="dcart_payment_method_selection"><label for="payment_method">'.$name.'</label><input type="radio" name="payment_method" value='.$name.' /></div>';
-					$forms_html .='<div class="dcart_payment_method_form '.$name.'">'.$paymentFormResults[$i].'</div>';
-				}
-			}
-		}
-	?></div>
-
-	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SPECIAL_INSTR')?></h3>
+	<h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SPECIAL_INSTR')?></h4>
+	<?php if($recurring_option==1) { //allow users to decide if they want it to be a recurring or a one-time donation ?>
+		<div><label for="recurring"><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_LABEL')?></label>
+			<input type="checkbox" name="recurring" <?=($this->item->cart->recurring?'checked="checked" ':'')?>/>
+		</div>
+	<?php } ?>
 	<div><label for="special_instr"><?=JText::_('COM_DONORCART_CHECKOUT_SPECIAL_INSTR')?></label>
 		<textarea name="special_instr"><?=$this->item->special_instr?></textarea>
 	</div>
+
+	<?php
+	JPluginHelper::importPlugin('donorcart');
+	$dispatcher = JDispatcher::getInstance();
+	$paymentSelectorResults = $dispatcher->trigger('onDisplayPaymentSelector', array($this->item, $this->params));
+	$paymentFormResults = $dispatcher->trigger('onDisplayPaymentForm', array($this->item, $this->params));
+	$numPayments = count($paymentSelectorResults);
+	if(count($paymentFormResults) != $numPayments) { ?>
+		<h4><?=JText::_('COM_DONORCART_CHECKOUT_NO_PAYMENT_AVAILABLE');?></h4>
+	<?php } else {
+		for($i = 0; $i < $numPayments; $i++) {
+			if(!$paymentSelectorResults[$i]) {
+				unset($paymentSelectorResults[$i]);
+				unset($paymentFormResults[$i]);
+			}
+		}
+		$numPayments = count($paymentSelectorResults);
+		if($numPayments == 0) { ?>
+			<h4><?=JText::_('COM_DONORCART_CHECKOUT_NO_PAYMENT_AVAILABLE');?></h4>
+		<?php } elseif($numPayments == 1) { ?>
+			<input type="hidden" name="payment_method" value="<?=reset($paymentSelectorResults)?>" />
+			<?php
+				$form_html = reset($paymentFormResults);
+				if(!empty($form_html)) { ?>
+					<div>
+						<h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_PAYMENT')?></h4>
+						<?=$form_html?>
+					</div>
+				<?php }
+			?>
+		<?php } else { ?>
+			<div><h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_PAYMENT')?></h4>
+			<?php foreach($paymentSelectorResults as $i => $name) {
+				echo '<div class="dcart_payment_method_selection"><label for="payment_method">'.$name.'</label><input type="radio" name="payment_method" value='.$name.' /></div>';
+				echo '<div class="dcart_payment_method_form '.$name.'">'.$paymentFormResults[$i].'</div>';
+			} ?>
+			</div>
+		<?php }
+	} ?>
 
 	<input type="submit" name="Submit" value="<?=JText::_('COM_DONORCART_CHECKOUT_CONTINUE_ACTION')?>" />
 	<input type="hidden" name="task" value="submit" />

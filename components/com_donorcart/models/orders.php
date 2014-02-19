@@ -164,16 +164,13 @@ class DonorcartModelOrders extends FOFModel {
 		if($result && $record->billing_address_id && $record->shipping_address_id != $record->billing_address_id && $record->billing_address->locked != 1) {
 			$result = FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->billing_address_id)->delete();
 		}
-		//lastly remove the cart
-		if($result && $record->cart_id) {
-			$result = FOFModel::getTmpInstance('carts','DonorcartModel')->setId($record->cart_id)->delete();
-		}
 
 		return $result;
 	}
 
 	protected function onAfterDelete($id) {
 		JFactory::getSession()->set('order_id',null);
+		FOFModel::getAnInstance('carts','DonorcartModel')->delete();
 		return parent::onAfterDelete($id);
 	}
 
@@ -198,7 +195,7 @@ class DonorcartModelOrders extends FOFModel {
 	}
 
 	public function updateUserData($order_id, $user_id = null, $email = null, $status = null) {
-		$this->getItem($order_id);
+		$order = $this->getItem($order_id);
 		if($user_id) {
 			if(!($user = JFactory::getUser($user_id))) return false;
 			$email = $user->email;
@@ -211,31 +208,30 @@ class DonorcartModelOrders extends FOFModel {
 		//run the update in a transaction, so that if part of it fails, the entire update fails
 		$this->_db->transactionStart();
 
-		if($this->cart_id && !empty($user_id) && is_object($this->cart) && $this->cart->user_id != $user_id) {
-			if(!FOFModel::getTmpInstance('carts','DonorcartModel')->save(array('donorcart_cart_id'=>$this->cart_id, 'user_id'=>$user_id))) {
+		if($order->cart_id && !empty($user_id) && is_object($order->cart) && $order->cart->user_id != $user_id) {
+			if(!FOFModel::getAnInstance('carts','DonorcartModel')->save(array('donorcart_cart_id'=>$order->cart_id, 'session_id'=>'', 'user_id'=>$user_id))) {
 				$this->_db->transactionRollback();
 				return false;
 			}
 		}
-		if($this->shipping_address_id && !empty($user_id) && is_object($this->shipping_address) && $this->shipping_address->user_id != $user_id) {
-			if($this->shipping_address->locked) {
-				$this->shipping_address_id = null;
-				$this->shipping_address = null;
+		if($order->shipping_address_id && !empty($user_id) && is_object($order->shipping_address) && $order->shipping_address->user_id != $user_id) {
+			if($order->shipping_address->locked) {
 				$order_update_array['shipping_address_id'] = null;
+				if($order->billing_address_id && $order->billing_address_id == $order->shipping_address_id) {
+					$order_update_array['billing_address_id'] = null;
+				}
 			} else {
-				if(!FOFModel::getTmpInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$this->shipping_address_id, 'user_id'=>$user_id))) {
+				if(!FOFModel::getAnInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$order->shipping_address_id, 'user_id'=>$user_id))) {
 					$this->_db->transactionRollback();
 					return false;
 				}
 			}
 		}
-		if($this->billing_address_id && !empty($user_id) && is_object($this->billing_address) && $this->billing_address->user_id != $user_id) {
-			if($this->billing_address->locked) {
-				$this->billing_address_id = null;
-				$this->billing_address = null;
+		if($order->billing_address_id && $order->billing_address_id != $order->shipping_address_id && !empty($user_id) && is_object($order->billing_address) && $order->billing_address->user_id != $user_id) {
+			if($order->billing_address->locked) {
 				$order_update_array['billing_address_id'] = null;
 			} else {
-				if(!FOFModel::getTmpInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$this->billing_address_id, 'user_id'=>$user_id))) {
+				if(!FOFModel::getAnInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$order->billing_address_id, 'user_id'=>$user_id))) {
 					$this->_db->transactionRollback();
 					return false;
 				}
@@ -258,51 +254,49 @@ class DonorcartModelOrders extends FOFModel {
 		return true;
 	}
 
-	public function removeUserData($order_id, $remove_email = false, $status = null) {
-		$this->getItem($order_id);
+	public function removeUserData($order_id, $remove_email = false, $status = null, $session_id = null) {
+		$order = $this->getItem($order_id);
 
-		$order_update_array = array('user_id'=>null);
+		//do not remove the userdata from a submitted order
+		if(!is_object($order) || !$order->donorcart_order_id || $order->status == 'submitted' || $order->status == 'complete' || ($order->payment_id && is_object($order->payment) && $order->payment->status == 'complete')) {
+			return false;
+		}
+
+
+		$order_update_array = array('donorcart_order_id'=>$order_id,'user_id'=>null);
 		if($remove_email) $order_update_array['email'] = '';
 		if(!empty($status)) $order_update_array['status'] = $status;
 
 		//run the update in a transaction, so that if part of it fails, the entire update fails
 		$this->_db->transactionStart();
 
-		if($this->cart_id && is_object($this->cart) && !empty($this->cart->user_id)) {
-			if(!FOFModel::getTmpInstance('carts','DonorcartModel')->save(array('donorcart_cart_id'=>$this->cart_id, 'user_id'=>null))) {
+		if($order->cart_id && is_object($order->cart) && !empty($order->cart->user_id)) {
+			if(!FOFModel::getAnInstance('carts','DonorcartModel')->save(array('donorcart_cart_id'=>$order->cart_id, 'session_id'=>$session_id, 'user_id'=>null))) {
 				$this->_db->transactionRollback();
 				return false;
 			}
 		}
-		if($this->shipping_address_id && is_object($this->shipping_address) && !empty($this->shipping_address->user_id)) {
-			if($this->shipping_address->locked) {
-				$this->shipping_address_id = null;
-				$this->shipping_address = null;
+		if($order->shipping_address_id && is_object($order->shipping_address) && !empty($order->shipping_address->user_id)) {
+			if($order->shipping_address->locked) {
 				$order_update_array['shipping_address_id'] = null;
+				if($order->billing_address_id == $order->shipping_address_id) {
+					$order_update_array['billing_address_id'] = null;
+				}
 			} else {
-				if(!FOFModel::getTmpInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$this->shipping_address_id, 'user_id'=>null))) {
+				if(!FOFModel::getAnInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$order->shipping_address_id, 'user_id'=>null))) {
 					$this->_db->transactionRollback();
 					return false;
 				}
 			}
 		}
-		if($this->billing_address_id && is_object($this->billing_address) && !empty($this->billing_address->user_id)) {
-			if($this->billing_address->locked) {
-				$this->billing_address_id = null;
-				$this->billing_address = null;
+		if($order->billing_address_id && $order->billing_address_id != $order->shipping_address_id && is_object($order->billing_address) && !empty($order->billing_address->user_id)) {
+			if($order->billing_address->locked) {
 				$order_update_array['billing_address_id'] = null;
 			} else {
-				if(!FOFModel::getTmpInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$this->billing_address_id, 'user_id'=>null))) {
+				if(!FOFModel::getAnInstance('addresses','DonorcartModel')->save(array('donorcart_address_id'=>$order->billing_address_id, 'user_id'=>null))) {
 					$this->_db->transactionRollback();
 					return false;
 				}
-			}
-		}
-		if($this->payment_id && is_object($this->payment)) {
-			if($this->payment->status == 'complete') return false;
-			if(!FOFModel::getTmpInstance('payments','DonorcartModel')->save(array('donorcart_payment_id'=>$this->payment_id, 'user_id'=>null))) {
-				$this->_db->transactionRollback();
-				return false;
 			}
 		}
 		if(!$this->save($order_update_array)) {

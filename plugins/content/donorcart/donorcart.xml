@@ -20,6 +20,7 @@
 			<li>url="http://x.com" (optional)</li>
 			<li>img="/path/to/image.jpg" (optional) - an image to display on the form</li>
 			<li>submitlabel="Give" (optional, translatable - if left blank, will default to "Give")</li>
+			<li>recurringlabel="Monthly Gift" (optional, translatable - if not included the user will not be able to specify a recurring donation)</li>
 			<li>priceoptions="5,10,20,50" (optional - if left blank the form will not include any suggested price options)</li>
 			<li>pricelabel="Gift Amount" (optional, translatable - if left blank, will default to "Gift Amount")</li>
 			<li>namelabel="Name Label" (optional, translatable, only applies if editname=1 - if left blank will default to "Name")</li>
