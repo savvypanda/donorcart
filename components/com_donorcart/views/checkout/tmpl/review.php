@@ -85,7 +85,7 @@ $recurring_flag = $this->params->get('allow_recurring_donations',0);
 		<?php
 		JPluginHelper::importPlugin('donorcart');
 		$dispatcher = JDispatcher::getInstance();
-		$results = $dispatcher->trigger('onDisplayPaymentInfo', array($this->item));
+		$results = $dispatcher->trigger('onDisplayPaymentInfo', array($this->item, $this->params, $this->item->payment_name));
 		foreach($results as $result):
 			if(is_string($result)) echo $result;
 		endforeach;

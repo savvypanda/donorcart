@@ -38,8 +38,8 @@ if($display_addresses) {
 			<legend><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_GUEST_CHECKOUT')?></legend>
 			<p><?=JText::_('COM_DONORCART_CHECKOUT_EMAIL_REQUIRED')?></p>
 			<div class="field">
-				<label for="email"><?php echo JText::_('Email'); ?></label>
-				<input type="text" name="email" class="inputbox" alt="email" size="18" />
+				<label for="dcart-guestcheckout-email"><?php echo JText::_('Email'); ?></label>
+				<input type="text" name="email" id="dcart-guestcheckout-email" class="inputbox" alt="email" size="18" />
 			</div>
 		</fieldset>
 	<?php endif; ?>
@@ -48,8 +48,8 @@ if($display_addresses) {
 		<h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_ADDRESSES')?></h4>
 		<div class="addresses">
 			<?php if($display_both_options): ?>
-				<label for="use_same_address_for_billto"><?=JText::_('COM_DONORCART_HEADING_USE_SAME_ADDRESS_FOR_BOTH')?></label>
-				<input type="checkbox" name="use_same_address_for_billto" value="1"<?php if($this->item->shipping_address_id == $this->item->billing_address_id) echo ' checked="checked"'; ?> />
+				<label for="dcart-use-same-address-for-billto"><?=JText::_('COM_DONORCART_HEADING_USE_SAME_ADDRESS_FOR_BOTH')?></label>
+				<input type="checkbox" name="use_same_address_for_billto" id="dcart-use-same-address-for-billto" value="1"<?php if($this->item->shipping_address_id == $this->item->billing_address_id) echo ' checked="checked"'; ?> />
 			<?php endif; ?>
 			<?php if($shipto_option_flag != 0): ?>
 				<div class="shippingaddress">
@@ -72,12 +72,12 @@ if($display_addresses) {
 
 	<h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SPECIAL_INSTR')?></h4>
 	<?php if($recurring_option==1) { //allow users to decide if they want it to be a recurring or a one-time donation ?>
-		<div><label for="recurring"><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_LABEL')?></label>
-			<input type="checkbox" name="recurring" <?=($this->item->cart->recurring?'checked="checked" ':'')?>/>
+		<div><label for="dcart-checkbox-recurring"><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_LABEL')?></label>
+			<input type="checkbox" name="recurring" id="dcart-checkbox-recurring" <?=($this->item->cart->recurring?'checked="checked" ':'')?>/>
 		</div>
 	<?php } ?>
-	<div><label for="special_instr"><?=JText::_('COM_DONORCART_CHECKOUT_SPECIAL_INSTR')?></label>
-		<textarea name="special_instr"><?=$this->item->special_instr?></textarea>
+	<div><label for="dcart-special-instr"><?=JText::_('COM_DONORCART_CHECKOUT_SPECIAL_INSTR')?></label>
+		<textarea name="special_instr" id="dcart-special-instr"><?=$this->item->special_instr?></textarea>
 	</div>
 
 	<?php
@@ -112,7 +112,7 @@ if($display_addresses) {
 		<?php } else { ?>
 			<div><h4><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_PAYMENT')?></h4>
 			<?php foreach($paymentSelectorResults as $i => $name) {
-				echo '<div class="dcart_payment_method_selection"><label for="payment_method">'.$name.'</label><input type="radio" name="payment_method" value='.$name.' /></div>';
+				echo '<div class="dcart_payment_method_selection"><label for="dcart-payment-method-'.$i.'">'.$name.'</label><input type="radio" name="payment_method" id="dcart-payment-method-'.$i.'" value='.$name.' /></div>';
 				echo '<div class="dcart_payment_method_form '.$name.'">'.$paymentFormResults[$i].'</div>';
 			} ?>
 			</div>
@@ -154,7 +154,7 @@ if($display_addresses) {
 	if(!empty($this->prior_addresses)): ?>
 		<?php foreach($this->prior_addresses as $address): ?>
 			<div class="addressoption">
-				<input type="radio" name="<?=$prefix?>id" id="<?=$prefix?>button_<?$address->donorcart_address_id?>" value="<?=$address->donorcart_address_id?>" <?php if($defaults['donorcart_address_id']==$address->donorcart_address_id) $prior_address_selected=true; echo('checked="checked"'); ?> /><label for="<?=$prefix?>button_<?=$address->donorcart_address_id?>"><?=JText::sprintf('COM_DONORCART_CHECKOUT_USE_THIS_ADDRESS',$address->addressname)?></label>
+				<input type="radio" name="<?=$prefix?>id" id="dcart-<?=$prefix?>button-<?$address->donorcart_address_id?>" value="<?=$address->donorcart_address_id?>" <?php if($defaults['donorcart_address_id']==$address->donorcart_address_id) $prior_address_selected=true; echo('checked="checked"'); ?> /><label for="dcart-<?=$prefix?>button-<?=$address->donorcart_address_id?>"><?=JText::sprintf('COM_DONORCART_CHECKOUT_USE_THIS_ADDRESS',$address->addressname)?></label>
 				<?php
 					switch($address->address_type){
 						case 'house': $addresstype=JText::_('COM_DONORCART_ADDRESSTYPE_HOUSE'); break;
@@ -189,12 +189,12 @@ if($display_addresses) {
 		<?php if(empty($this->prior_addresses)): ?>
 			<input type="hidden" name="<?=$prefix?>id" value="<?=$defaults['donorcart_address_id']?>" />
 		<?php else: ?>
-			<input type="radio" name="<?=$prefix?>id" id="<?=$prefix?>button_new" value="<?=$defaults['donorcart_address_id']?>" <?php if(!$defaults['locked']) echo('checked="checked"'); ?>/><label for="<?=prefix?>button-new"><?=JText::_('COM_DONORCART_CHECKOUT_CREATE_NEW_ADDRESS')?></label>
+			<input type="radio" name="<?=$prefix?>id" id="dcart-<?=$prefix?>button-new" value="<?=$defaults['donorcart_address_id']?>" <?php if(!$defaults['locked']) echo('checked="checked"'); ?>/><label for="dcart-<?=$prefix?>button-new"><?=JText::_('COM_DONORCART_CHECKOUT_CREATE_NEW_ADDRESS')?></label>
 			<div class="optiondrawer">
 		<?php endif; ?>
 		<div class="field">
-			<label for="<?=$prefix?>address_type"><?=JText::_('COM_DONORCART_ADDRESSTYPE')?></label>
-			<select name="<?=$prefix?>address_type">
+			<label for="dcart-<?=$prefix?>address-type"><?=JText::_('COM_DONORCART_ADDRESSTYPE')?></label>
+			<select name="<?=$prefix?>address_type" id="dcart-<?=$prefix?>address-type">
 				<option value="house"<?php if($defaults['address_type']=='house')echo(' selected="selected"');?>><?=JText::_('COM_DONORCART_ADDRESSTYPE_HOUSE')?></option>
 				<option value="apartment"<?php if($defaults['address_type']=='apartment')echo(' selected="selected"');?>><?=JText::_('COM_DONORCART_ADDRESSTYPE_APARTMENT')?></option>
 				<option value="box"<?php if($defaults['address_type']=='box')echo(' selected="selected"');?>><?=JText::_('COM_DONORCART_ADDRESSTYPE_BOX')?></option>
@@ -203,7 +203,7 @@ if($display_addresses) {
 			</select>
 		</div>
 		<div class="field">
-			<label for="<?=$prefix?>first_name"><?=JText::_('COM_DONORCART_ADDRESS_FIRSTNAME')?></label>
+			<label for="dcart-<?=$prefix?>first-name"><?=JText::_('COM_DONORCART_ADDRESS_FIRSTNAME')?></label>
 			<input type="text" name="<?=$prefix?>first_name" value="<?=$defaults['first_name']?>"/>
 		</div>
 		<div class="field">

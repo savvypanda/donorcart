@@ -25,8 +25,8 @@
 				$(dcart_target).html(data);
 				if(checkout_alert != false) {
 					if(checkout_alert === 'skip') {
-						//if we are supposed to skip straight to checkout, submit the form
-						$('form[name=dcart_cart]').submit();
+						//we are supposed to skip straight to checkout
+						window.location='index.php?option=com_donorcart';
 					} else {
 						//ask the user if they would like to proceed to checkout
 						var dialogbuttons = {};

@@ -2,7 +2,7 @@
 defined('_JEXEC') or die();
 
 // Load the Select helper class of our component
-//$this->loadHelper('select');
+$params = JComponentHelper::getParams('com_donorcart');
 
 // Joomla! editor object
 $editor = JFactory::getEditor();
@@ -32,7 +32,7 @@ $editor = JFactory::getEditor();
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_NOTES_LABEL') ?></strong>: <?php echo $this->item->notes; ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ERRORS_LABEL') ?></strong>: <?php echo $this->item->errors; ?></p>
 		<?php if($this->item->viewtoken): ?>
-			<p><strong><?= JText::_('COM_DONORCART_ORDER_LINK_LABEL') ?></strong>: <?php echo str_replace('/administrator','',JRoute::_('index.php',true,(JComponentHelper::getParams('com_donorcart')->get('use_ssl',0)==0)?-1:1)).'?option=com_donorcart&view=order&id='.$this->item->donorcart_order_id.'&viewtoken='.$this->item->viewtoken; ?></p>
+			<p><strong><?= JText::_('COM_DONORCART_ORDER_LINK_LABEL') ?></strong>: <?php echo str_replace('/administrator','',JRoute::_('index.php',true,($params->get('use_ssl',0)==0)?-1:1)).'?option=com_donorcart&view=order&id='.$this->item->donorcart_order_id.'&viewtoken='.$this->item->viewtoken; ?></p>
 		<?php endif; ?>
 
 		<h2><?= JText::_('COM_DONORCART_ORDER_CART_HEADING') ?></h2>
@@ -73,8 +73,8 @@ $editor = JFactory::getEditor();
 		<?php if($this->item->payment_id):
 			JPluginHelper::importPlugin('donorcart');
 			$dispatcher = JDispatcher::getInstance();
-			$results = $dispatcher->trigger('onDisplayPaymentInfo', array($this->item));
-			$paymenttext = '';
+			$results = $dispatcher->trigger('onDisplayPaymentInfo', array($this->item, $params, $this->item->payment_name));
+			$paymenttext = '<p>Payment Name: '.$this->item->payment_name.'</p>';
 			foreach($results as $result):
 				if(is_string($result)) $paymenttext.=$result;
 			endforeach;

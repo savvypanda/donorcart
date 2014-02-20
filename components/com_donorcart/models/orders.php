@@ -1,7 +1,6 @@
 <?php defined('_JEXEC') or die('Restricted Access');
 
 class DonorcartModelOrders extends FOFModel {
-	//public $cart, $billing_address, $shipping_address, $payment;
 
 	public function __construct($config = array()) {
 		$user = JFactory::getUser();
@@ -9,15 +8,6 @@ class DonorcartModelOrders extends FOFModel {
 		$input = JFactory::getApplication()->input;
 		$request_id = ($input->get('option')=='com_donorcart' && $input->get('view')=='order')?$input->get('id',false,'INT'):false;
 		$my_id = $request_id?$request_id:$session->get('order_id',0);
-		/* There has to be a better way to get the order than to get it from the cart_id in the constructor
-		if(!$my_id) {
-			$cart_id = $session->get('cart_id',0);
-			if($cart_id) {
-				$my_id = $this->getOrderIdFromCartId($cart_id);
-			}
-		}
-		*/
-		//$config=array_merge($config, array('table'=>'orders','id'=>$my_id));
 		$config['id']=$my_id;
 
 		parent::__construct($config);
@@ -41,32 +31,6 @@ class DonorcartModelOrders extends FOFModel {
 	public function setIDsFromRequest(){
 		return $this;
 	}
-
-	/* private function getOrderIdFromCartId($cart_id) {
-		$query = 'SELECT donorcart_order_id FROM #__donorcart_orders WHERE cart_id='.$this->_db->quote($cart_id);
-		$this->_db->setQuery($query);
-		$this->_db->query();
-		if($this->_db->getNumRows() == 1) {
-			return $this->_db->loadResult();
-		}
-		return 0;
-	} */
-
-	/* public function getSubTotal($record = null) {
-		if(!$record) {
-			$record = $this->getItem();
-		}
-		$subtotal = 0;
-		if(is_object($record) && $record->cart_id) {
-			if(!$record->cart || !is_object($record->cart)) $record->cart = FOFModel::getTmpInstance('carts','DonorcartModel')->getItem($record->cart_id);
-			if(is_array($record->cart->items) && !empty($record->cart->items)) {
-				foreach($record->cart->items as $item) {
-					$subtotal += $item->qty * $item->price;
-				}
-			}
-		}
-		return $subtotal;
-	} */
 
 	public function updateOrderTotal($subtotal = null, $savetotal = true) {
 		if(!$this->getId()) return false;
@@ -93,6 +57,7 @@ class DonorcartModelOrders extends FOFModel {
 
 	protected function onAfterGetItem(&$record) {
 		parent::onAfterGetItem($record);
+		//Now let's set the rest of the references
 		if($record->cart_id) {
 			$record->cart = FOFModel::getTmpInstance('carts','DonorcartModel')->getItem($record->cart_id);
 		}
@@ -109,35 +74,8 @@ class DonorcartModelOrders extends FOFModel {
 
 	protected function onBeforeSave(&$data, &$table) {
 		if(!parent::onBeforeSave($data, $table)) return false;
-		/*
-		 * parent::onBeforeSave merges the (new) data and (old) table, so we do not have to do that here.
 
-		if(is_object($table)) { $tabledata = get_object_vars($table);
-		} elseif(is_array($table)) { $tabledata = $table;
-		} else { return false; //we can't update the order total if we don't know what the data type is that we are saving
-		}
-		if(is_object($data)) { $datadata = get_object_vars($data);
-		} elseif(is_array($data)) { $datadata = $data;
-		} else { return false; //we can't update the order total if we don't know what the data type is that we are saving
-		}
-		$newdata = array_merge($tabledata, $datadata);
-		$total = $this->calcOrderTotal($newdata);
-
-		if($data instanceof FOFTable) {
-			$data->bind(array('order_total'=>$total));
-		} elseif(is_object($data)) {
-			$data->order_total = $total;
-		} elseif(is_array($data)) {
-			$data['order_total'] = $total;
-		} else {
-			return false; //we can't update the order total if we don't know what the data type is that we are saving
-		}
-		return true;
-
-		 * Now let's update the order total
-		 */
 		$table->order_total = $this->updateOrderTotal(null, false);
-
 		return true;
 	}
 
@@ -196,11 +134,12 @@ class DonorcartModelOrders extends FOFModel {
 
 	public function updateUserData($order_id, $user_id = null, $email = null, $status = null) {
 		$order = $this->getItem($order_id);
+		if(!$order->donorcart_order_id || !is_object($order) || !$order->cart_id || !is_object($order->cart)) return false;
 		if($user_id) {
 			if(!($user = JFactory::getUser($user_id))) return false;
 			$email = $user->email;
 		}
-		$order_update_array = array();
+		$order_update_array = array('donorcart_order_id',$order->donorcart_order_id);
 		if(!empty($user_id)) $order_update_array['user_id'] = $user_id;
 		if(!empty($email)) $order_update_array['email'] = $email;
 		if(!empty($status)) $order_update_array['status'] = $status;
@@ -208,7 +147,7 @@ class DonorcartModelOrders extends FOFModel {
 		//run the update in a transaction, so that if part of it fails, the entire update fails
 		$this->_db->transactionStart();
 
-		if($order->cart_id && !empty($user_id) && is_object($order->cart) && $order->cart->user_id != $user_id) {
+		if(!empty($user_id) && $order->cart->user_id != $user_id) {
 			if(!FOFModel::getAnInstance('carts','DonorcartModel')->save(array('donorcart_cart_id'=>$order->cart_id, 'session_id'=>'', 'user_id'=>$user_id))) {
 				$this->_db->transactionRollback();
 				return false;
@@ -237,13 +176,6 @@ class DonorcartModelOrders extends FOFModel {
 				}
 			}
 		}
-		if($this->payment_id && is_object($this->payment) && $this->payment->user_id != $user_id) {
-			if(!FOFModel::getTmpInstance('payments','DonorcartModel')->save(array('donorcart_payment_id'=>$this->payment_id, 'user_id'=>$user_id))) {
-				$this->_db->transactionRollback();
-				return false;
-			}
-		}
-
 		if(!empty($order_update_array)) {
 			if(!$this->save($order_update_array)) {
 				$this->_db->transactionRollback();

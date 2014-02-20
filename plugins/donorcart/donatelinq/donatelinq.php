@@ -14,55 +14,87 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 	 */
 	public function onDisplayPaymentForm($order, $params) {
 		if(!$this->isActive()) return;
+		$allow_recurring_donations = $params->get('allow_recurring_donations',0);
+		if($allow_recurring_donations == 0) return;
 
-		$recurring_options = array();
-		switch($params->get('allow_recurring_donations',0)){
-			case 0: //the only option is a One-Time donation
-				$recurring_options['One Time']='One Time';
-				break;
-			case 1: //allow the user to select one-time donations or recurring donations
-				$recurring_options['One Time']='One Time';
-			default: //allow the user to select recurring donation options (may or may not be allowed to select one-time donations
-				if($this->params->get('recur_twoweeks',false)) $recurring_options['2 Weeks'] = '2 Weeks';
-				if($this->params->get('recur_weekly',false)) $recurring_options['Weekly'] = 'Weekly';
-				if($this->params->get('recur_fourweeks',false)) $recurring_options['4 Weeks'] = '4 Weeks';
-				if($this->params->get('recur_monthly',false)) $recurring_options['Monthly'] = 'Monthly';
-				if($this->params->get('recur_querterly',false)) $recurring_options['Querterly'] = 'Querterly';
-				if($this->params->get('recur_semiannual',false)) $recurring_options['Semi-Annual'] = 'Semi-Annual';
-				if($this->params->get('recur_yearly',false)) $recurring_options['Yearly'] = 'Yearly';
-				break;
+		$recurring_options = $this->_get_recurring_options();
+		if(count($recurring_options)==0) {
+			//There are no options to choose from. We don't need to display the frequency selector
+			return;
 		}
-		if(empty($recurring_options)) $recurring_options['One Time'] = 'One Time'; // require at least one option
-		if(count($recurring_options) == 1) {
-			reset($recurring_options);
-			$recurring_code = '<input type="hidden" name="selFrequency" value="'.key($recurring_options).'" />';
-		} else {
-			$recurring_code = '<p><label for="selFrequency">Recurring Frequency: </label><select name="selFrequency">';
-			foreach($recurring_options as $value => $text) {
-				$recurring_code .= '<option value="'.$value.'">'.$text.'</option>';
+
+		$payment = isset($order->payment)?$order->payment:false;
+		$payment_info = $payment?json_decode($payment->infohash,true):array();
+		$selected_frequency = array_key_exists('selFrequency',$payment_info)?$payment_info['selFrequency']:'';
+
+		if($allow_recurring_donations==2) {
+			if(count($recurring_options)==1) {
+				reset($recurring_options);
+				$recurring_code = '<input type="hidden" name="selFrequency" value="'.key($recurring_options).'">';
+			} else {
+				$recurring_code = '<p><label for="selFrequency">Recurring Frequency: </label><select name="selFrequency">';
+				foreach($recurring_options as $value => $text) {
+					$recurring_code .= '<option value="'.$value.'"'.(($value==$selected_frequency)?' selected="selected"':'').'>'.$text.'</option>';
+				}
+				$recurring_code .= '</select></p>';
 			}
-			$recurring_code .= '</select></p>';
-			$recurring_code .= <<<HEREDOC
+		} else {
+			if(count($recurring_options)==1) {
+				//The user may either select recurring or one-time. No select list required.
+				reset($recurring_options);
+				$recurring_default = key($recurring_options);
+				$recurring_code = <<<HEREDOC
+<input type="hidden" name="selFrequency" value="One Time">
 <script type="text/javascript">
 (function($){
 	var recurring_option = $('#donorcart_checkout_form input[name=recurring]');
-	var recurring_selector = $('#donocart_checkout_form select[name=selFrequency]');
+	function update_recurring_option() {
+		if(recurring_option.is(':checked')) {
+			$('#donorcart_checkout_form input[name=selFrequency]').val('$recurring_default');
+		} else {
+			$('#donorcart_checkout_form input[name=selFrequency]').val('One Time');
+		}
+	}
+	update_recurring_option();
+	recurring_option.change(update_recurring_option);
+})(jQuery);
+</script>
+HEREDOC;
+			} else {
+				//this is the part with the most options
+				$recurring_code = '<input type="hidden" name="selFrequency" value="One Time"><p id="dcart-donatelinq-frequencyouter"><label for="dcart-donatelinq-frequencyselector">Recurring Frequency: </label><select id="dcart-donatelinq-frequencyselector">';
+				foreach($recurring_options as $value => $text) {
+					$recurring_code .= '<option value="'.$value.'"'.(($value==$selected_frequency)?' selected="selected"':'').'>'.$text.'</option>';
+				}
+				$recurring_code .= '</select></p>';
+				$recurring_code .= <<<HEREDOC
+<script type="text/javascript">
+(function($){
+	var recurring_option = $('#donorcart_checkout_form input[name=recurring]');
+	var recurring_selector = $('#dcart-donatelinq-frequencyselector');
+	var recurring_container = $('#dcart-donatelinq-frequencyouter');
+	var recurring_input = $('#donorcart_checkout_form input[name=selFrequency]');
 	function update_recurring_options() {
 		if(recurring_option.is(':checked')) {
-			recurring_selector.show();
+			recurring_container.show();
+			recurring_input.val(recurring_selector.val());
 		} else {
-			recurring_selector.val('One Time').hide();
+			recurring_container.hide();
+			recurring_input.val('One Time');
 		}
 	}
 	update_recurring_options();
 	recurring_option.change(update_recurring_options);
+	recurring_selector.change(update_recurring_options);
 })(jQuery);
 </script>
 HEREDOC;
+			}
 		}
 
 		$form = $recurring_code;
-		return form;
+		$form .= '<p>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</p>';
+		return $form;
 	}
 
 
@@ -106,12 +138,12 @@ HEREDOC;
 		if(!$order->order_total):
 			return 'No payment may be made for an empty order. Please add something to your cart and try checking out again.';
 		else:
-			$testmode = $params->get('testmode',1)?'Yes':'No';
 			$ssl = $params->get('ssl_mode')?1:-1;
-			$return_url = JRoute::_('index.php?option=com_donorcart&task=postback',true,$ssl);
-			$payment_info = json_decode($order->payment->infohash);
-			$order->special_instr = htmlentities($order->special_instr);
-//$cc_charges = round($order->order_total * 0.032,2);
+			$return_url = 'index.php?option=com_donorcart&task=postback&oid='.$order->donorcart_order_id;
+			if($order->user_id) $return_url .= '&uid='.$order->user_id;
+			$return_url = JRoute::_($return_url,true,$ssl);
+			$payment_info = json_decode($order->payment->infohash,true);
+			$order->special_instr = htmlentities(substr($order->special_instr,0,500));
 
 			$cart_array = array('Designation^Amount');
 			if(is_object($order->cart) && is_array($order->cart->items)):
@@ -120,7 +152,6 @@ HEREDOC;
 				endforeach;
 			endif;
 			$cart_code = '<input type="hidden" name="gridLineItem" value="'.implode('|',$cart_array).'" />';
-//$cart_code .= '<input type="hidden" name="cart_original" value="'.implode('|',$cart_array).'" />';
 
 			$address_code = '<input type="hidden" name="Email" value="'.$order->email.'" />';
 			if($order->billing_address_id && is_object($order->billing_address)) {
@@ -150,42 +181,23 @@ HEREDOC;
 				if($order->shipping_address->country) $address_code .= '<input type="hidden" name="mail_country" value="'.str_replace('"','\"',$order->shipping_address->country).'" />';
 			}
 
-			$custom_code = '<input name="custom_1" value="'.$order->donorcart_order_id.'" type="hidden" />';
-			if($order->user_id) $custom_code .= '<input name="custom_0" value="'.$order->user_id.'" type="hidden" />';
-
+			$recurring_frequency = isset($payment_info['selFrequency'])?$payment_info['selFrequency']:'One Time';
+			$recurring_code = '<input type="hidden" name="selFrequency" value="'.$recurring_frequency.'" />';
+			if($recurring_frequency != 'One Time') {
+				$recurring_code .= '<input type="hidden" name="donationStartDate" value="'.date('m/d/Y').'" />';
+			}
 
 			$form = <<<HEREDOC
 <form name="cartform" method="post" id="dcart-donatelinq-redirectform" enctype="application/x-www-form-urlencoded" action="{$this->params->get('donatelink')}">
 	<input name="returnURL" value="$return_url" type="hidden" />
-	<!--input name="show_receipt" value="No" type="hidden" /-->
 	<input name="merchantid" value="{$this->params->get('merchant_id')}" type="hidden" />
 	<input name="pageid" value="{$this->params->get('page_id')}" type="hidden" />
-	<input name="billing" value="index.php" type="hidden" />
-	<!--input name="pay_method" value="CC" type="hidden" /-->
-	<!--input name="sale_type" value="SALE" type="hidden" /-->
 	<input name="Amount" value="$order->order_total" type="hidden" />
-	<!--input name="amount_original" value="$order->order_total" type="hidden" /-->
-	<input name="test_request" value="$testmode" type="hidden" />
-	$custom_code
 	$cart_code
 	$address_code
-	<input type="hidden" name="selFrequency" value="{$payment_info['selFrequency']}" />
-	<input type="hidden" name="Special_Instructions" value="{$order->special_instr}" />
-	<strong>Special Instructions:</strong> Enter any additional information here (max 512 characters)<br />
+	$recurring_code
+	<input type="hidden" name="donationComments" value="{$order->special_instr}" />
 	<textarea name="" maxlength="512"></textarea><br />
-	<!--div class="checkout_boxx">
-		<h2>Help cover credit card fees</h2>
-		<p>For each credit card gift received, credit card companies charge around 3.2% of each gift. These fees are charged to missionaries as these costs are associated with their ministries. Your additional gift to cover credit card fees is fully tax-deductible.</p>
-		<div class="checkout_box_option">
-			<input id="pay_cc_yes" type="radio" name="pay_cc_charges" value="$-cc_charges" />
-			<input type="hidden" name="paycc_line_item" value="|Credit Card Fee Contribution^$$-cc_charges" />
-				I'll pay the 3.2% in credit card fee in addition to my donation.
-		</div>
-		<div class="checkout_box_option">
-			<input id="pay_cc_no" type="radio" checked="checked" name="pay_cc_charges" value="0" />
-			Please do not increase my gift to cover credit card fees. (You still receive credit for your full donation.)
-		</div>
-	</div-->
 	<p>You are being redirected to our secure processing server.<br />
 		If you are not redirected within 5 seconds <input type="submit" id="dcart-donatelinq-submitformbutton" value="Click here" /></p>
 	<script type="text/javascript">
@@ -194,16 +206,6 @@ HEREDOC;
 		redirectform.onSubmit=function(){if(submitted)return false;submitted=true;return true};
 		window.setTimeout(function(){redirectform.submit()},3000)
 	</script>
-	<!--script type="text/javascript">
-		jQuery('#pay_cc_yes').click(function() {
-			document.cartform.Amount.value = parseFloat(document.cartform.amount_original.value) + parseFloat(jQuery('#pay_cc_yes').attr('value'));
-			document.cartform.gridLineItem.value = document.cartform.cart_original.value + document.cartform.paycc_line_item.value;
-		});
-		jQuery('#pay_cc_no').click(function() {
-			document.cartform.Amount.value = document.cartform.amount_original.value;
-			document.cartform.gridLineItem.value = document.cartform.cart_original.value;
-		});
-	</script-->
 </form>
 HEREDOC;
 
@@ -224,10 +226,34 @@ HEREDOC;
 	public function onDisplayPaymentInfo($order, $params, $payment_name) {
 		if($payment_name != $this->getName()) return;
 		if(is_object($order->payment)) {
-			$payment_info = json_decode($order->payment->infohash);
+			$payment_info = json_decode($order->payment->infohash,true);
 			if(empty($payment_info)) return;
 			$html = '<p><strong>Payment Amount</strong>: '.$order->order_total.'</p>';
-			if(isset($payment_info['selFrequency'])) $html .= '<p><strong>Recurring Frequency</strong>:'.$payment_info['selFrequency'];
+
+			//only display the payment frequency if it makes sense (if there is more than one option available and one has been sselected)
+			$allow_recurring_donations = $params->get('allow_recurring_donations',0);
+			if($allow_recurring_donations != 0 && isset($payement_info['selFrequency'])) {
+				$recurring_options = ($allow_recurring_donations==1)?1:0;
+				$recurring_options += count($this->_get_recurring_options());
+				if($recurring_options > 1) {
+					$html .= '<p><strong>Payment Frequency</strong>:'.$payment_info['selFrequency'].'</p>';
+				}
+			}
+
+			if(isset($payment_info['paytype'])) {
+				if($payment_info['paytype']=='EFT') {
+					$html .= '<p><strong>Payment Type</strong>: EFT</p>';
+					if(!empty($payment_info['name_on_account'])) $html .= '<p><strong>Name on Account</strong>: '.$payment_info['name_on_account'].'</p>';
+					if(!empty($payment_info['lastfour'])) $html .= '<p><strong>Last 4 Digits of Account</strong>: '.$payment_info['lastfour'].'</p>';
+				} elseif($payment_info['paytype']=='CC') {
+					$html .= '<p><strong>Payment Type</strong>: Credit/Debit</p>';
+					if(!empty($payment_info['name_on_account'])) $html .= '<p><strong>Name on Account</strong>: '.$payment_info['name_on_account'].'</p>';
+					if(!empty($payment_info['lastfour'])) $html .= '<p><strong>Last 4 Digits of Account</strong>: '.$payment_info['lastfour'].'</p>';
+				}
+			}
+			if(isset($payment_info['Email']) && !empty($payment_info['Email'])) $html .= '<p><strong>Email</strong>: '.$payment_info['Email'].'</p>';
+			if(isset($payment_info['Special_Instructions']) && !empty($payment_info['Special_Instructions'])) $html .= '<p><strong>Special Instructions</strong>: '.$payment_info['Special_Instructions'].'</p>';
+
 			return $html;
 		}
 	}
@@ -243,7 +269,7 @@ HEREDOC;
 	 */
 	public function onBeforePostback($plugin_validated) {
 		if($plugin_validated || !$this->isActive()) return;
-		if(JRequest::get('pnref',false)) {
+		if(JRequest::getString('pnref',false)) {
 			$plugin_validated = $this->getName();
 			return true;
 		}
@@ -312,7 +338,7 @@ HEREDOC;
 		}
 
 		//finally, let's the get the order details and save the payment information
-		$order_id = JRequest::getInt('Custom2',false);
+		$order_id = JRequest::getInt('oid',false);
 		if(!$order_id) {
 			$is_valid = false;
 			return '<p>Unable to identify order for payment. Please contact the webmaster for assistance.</p>';
@@ -331,7 +357,7 @@ HEREDOC;
 			$is_valid = false;
 			return '<p>Invalid reference from payment gateway. Please contact your administrator for assistance</p>';
 		}
-		$user_id = JRequest::getInt('Custom1',$order->user_id);
+		$user_id = JRequest::getInt('uid',$order->user_id);
 
 		//sanity check. Make sure that the user on the order is the same as the user in the request
 		if(!empty($order->user_id) && $order->user_id != $user_id) {
@@ -350,8 +376,13 @@ HEREDOC;
 		}
 
 		$paymentmodel = FOFModel::getAnInstance('payment','DonorcartModel');
-		$paymentinfo = $_POST;
-		//TODO: get the desired payment information from the post. Don't just use the entire post.
+		$paymentinfo = json_decode($order->payment->infohash,true);
+		$paymentinfo['paytype'] = JRequest::getString('paytype','');
+		$paymentinfo['lastfour'] = JRequest::getString('lastfour','');
+		$paymentinfo['name_on_account'] = JRequest::getString('name_on_account','');
+		$paymentinfo['Email'] = JRequest::getString('Email','');
+		$paymentinfo['Special_Instructions'] = JRequest::getString('Special_Instructions','');
+
 
 		//$line_items = JRequest::getString('Custom2',null);  //get the cart items that we passed through a custom string to Cashlinq when we submitted payment.  We have to do this becuase Cashlinq does not pass this information back by default.
 		//$note = JRequest::getString('Custom3','');
@@ -407,5 +438,17 @@ HEREDOC;
 
 		//finally, save the order
 		$ordermodel->save($orderdata);
+	}
+
+	private function _get_recurring_options() {
+		$recurring_options = array();
+		if($this->params->get('recur_twoweeks',false)) $recurring_options['2 Weeks'] = '2 Weeks';
+		if($this->params->get('recur_weekly',false)) $recurring_options['Weekly'] = 'Weekly';
+		if($this->params->get('recur_fourweeks',false)) $recurring_options['4 Weeks'] = '4 Weeks';
+		if($this->params->get('recur_monthly',false)) $recurring_options['Monthly'] = 'Monthly';
+		if($this->params->get('recur_querterly',false)) $recurring_options['Querterly'] = 'Querterly';
+		if($this->params->get('recur_semiannual',false)) $recurring_options['Semi-Annual'] = 'Semi-Annual';
+		if($this->params->get('recur_yearly',false)) $recurring_options['Yearly'] = 'Yearly';
+		return $recurring_options;
 	}
 }

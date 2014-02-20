@@ -11,6 +11,7 @@
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_USERID', 'user_id', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_DATE', 'created_on', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_STATUS', 'status', $this->lists->order_Dir, $this->lists->order) ?></th>
+				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_RECURRING', 'recurring', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_TOTAL', 'order_total', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_EMAIL', 'email', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JText::_('COM_DONORCART_ORDERS_FIELD_ITEMS'); ?></th>
@@ -21,16 +22,17 @@
 				<td></td>
 				<td align="left">
 					<div style="text-wrap:none;display:inline-block;">
-						<?= JText::_('COM_DONORCART_ORDERS_FILTER_FROM') ?>: <?php echo JHtml::_('calendar', $this->startdate, 'startdate', 'startdate', '%Y-%m-%d', array('readonly'=>'true','onchange'=>'Joomla.submitform();')); ?>
+						<?= JText::_('COM_DONORCART_ORDERS_FILTER_FROM') ?>: <?php echo JHtml::_('calendar', $this->startdate, 'startdate', 'startdate', '%Y-%m-%d', array('readonly'=>'true','onchange'=>'document.adminForm.submit();')); ?>
 					</div>
 					<div style="text-wrap:none;display:inline-block;">
-						<?= JText::_('COM_DONORCART_ORDERS_FILTER_TO') ?>: <?php echo JHtml::_('calendar', $this->enddate, 'enddate', 'enddate', '%Y-%m-%d', array('readonly'=>'true','onchange'=>'Joomla.submitform();')); ?>
+						<?= JText::_('COM_DONORCART_ORDERS_FILTER_TO') ?>: <?php echo JHtml::_('calendar', $this->enddate, 'enddate', 'enddate', '%Y-%m-%d', array('readonly'=>'true','onchange'=>'document.adminForm.submit();')); ?>
 					</div>
 				</td>
-				<td><?=JHtml::_('select.genericlist', $this->statuslist, 'statusfilter', array('onchange'=>'Joomla.submitform();'), '', '', $this->statusfilter)?></td>
+				<td><?=JHtml::_('select.genericlist', $this->statuslist, 'statusfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->statusfilter)?></td>
+				<td><?=JHtml::_('select.genericlist', array(0=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),1=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurring', array('onchange'=>'document.adminForm.submit();'), '', '', JRequest::getInt('recurring',0))?></td>
 				<td></td>
-				<td><input type="text" name="emailfilter" value="<?=$this->emailfilter?>" onchange="Joomla.submitform();" /></td>
-				<td><input type="text" name="itemfilter" value="<?=$this->itemfilter?>" onchange="Joomla.submitform();" /></td>
+				<td><input type="text" name="emailfilter" value="<?=$this->emailfilter?>" onchange="document.adminForm.submit();" /></td>
+				<td><input type="text" name="itemfilter" value="<?=$this->itemfilter?>" onchange="document.adminForm.submit();" /></td>
 				<td></td>
 			</tr>
 		</thead>
@@ -51,6 +53,7 @@
 						<td><?=$item->user_id?></td>
 						<td><?=$item->created_on?></td>
 						<td><?=$item->status?></td>
+						<td><?=($item->recurring?'Recurring':'One Time')?></td>
 						<td><?=$item->order_total?></td>
 						<td><?=$item->email?></td>
 						<td><?=(($item->cart_id && is_object($item->cart))?DonorcartHelperFormat::formatItems($item->cart->items):'')?></td>

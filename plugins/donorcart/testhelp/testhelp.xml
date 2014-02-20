@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="2.5" type="plugin" method="upgrade" group="donorcart">
 	<name>Donorcart - Assistance with Testing</name>
-	<author>Mango Tree Media</author>
-	<creationDate>June 2013</creationDate>
-	<copyright>(C) 2013 Mango Tree Media LLC. All rights reserved.</copyright>
+	<author>Savvy Panda</author>
+	<creationDate>February 2014</creationDate>
+	<copyright>(C) 2014 Savvy Panda. All rights reserved.</copyright>
 	<license>GNU General Public License version 3 or later</license>
-	<authorEmail>tech@mangotreemedia.com</authorEmail>
-	<authorUrl>http://www.mangotreemedia.com</authorUrl>
+	<authorEmail>support@savvypanda.com</authorEmail>
+	<authorUrl>http://savvypanda.com</authorUrl>
 	<version>0.1.0</version>
 	<description>Run php code prior to testing payment plugins. UNINSTALL THIS PLUGIN BEFORE GOING LIVE.</description>
 
@@ -18,7 +18,7 @@
 	<config>
 		<fields name="params">
 			<fieldset name="basic">
-				<field name="code" type="textarea" filter="raw" size="50" default="" label="PHP Code" description="PHP Code to run prior to the postback method"/>
+				<field name="code" type="textarea" filter="raw" size="50" default="" label="PHP Code" description="PHP Code to run prior to the postback method. Do not include the opening and closing php tags" />
 			</fieldset>
 		</fields>
 	</config>

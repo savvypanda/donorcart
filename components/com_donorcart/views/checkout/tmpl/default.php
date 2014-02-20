@@ -1,14 +1,14 @@
 <?php defined('_JEXEC') or die("Restricted Access");
 
 $display_cart = isset($this->display_cart)?$this->display_cart:($this->params->get('display_cart') == 1);
+$login_option = $this->params->get('login_option',1);
 
-$params = JComponentHelper::getParams('com_donorcart');
-if($params->get('load_jquery')) {
+if($this->params->get('load_jquery')) {
 	JHtml::_('jquery.framework');
 }
-if($uiversion = $params->get('jqueryui_version')) {
+if($uiversion = $this->params->get('jqueryui_version')) {
 	JFactory::getDocument()->addScript('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/jquery-ui.min.js');
-	if($uitheme = $params->get('jquerui_theme')) {
+	if($uitheme = $this->params->get('jquerui_theme')) {
 		JFactory::getDocument()->addStyleSheet('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/themes/'.$uitheme.'/jquery-ui.min.css');
 	}
 }
@@ -25,12 +25,11 @@ FOFTemplateUtils::addJS('media://com_donorcart/donorcart.js');
 	if($this->user->id) {
 		?>
 		<h3><?= JText::_('COM_DONORCART_CHECKOUT_HEADER_CHECKOUT') ?></h3>
-		<p><?= JText::sprintf('COM_DONORCART_CHECKOUT_LOGGED_IN_AS',$this->user->username) ?><span class="dcart-dash"> - </span><span class="dcart-logout-link">
-			(<a href="<?=JRoute::_('index.php?option=com_donorcart&view=checkout&task=logout')?>"><?=JText::_('COM_DONORCART_CHECKOUT_LOGOUT')?></a>)</span></p>
+		<p><?= JText::sprintf('COM_DONORCART_CHECKOUT_LOGGED_IN_AS',$this->user->name) ?><span class="dcart-dash"> - </span><span class="dcart-logout-link">
+			(<a href="<?=JRoute::_('index.php?option=com_donorcart&view=checkout&task=logout')?>"><?=JText::_(($login_option==0)?'COM_DONORCART_CHECKOUT_LOGOUT_AND_CONTINUE_AS_GUEST':(($login_option==2)?'COM_DONORCART_CHECKOUT_LOGOUT_AND_CONTINUE_AS_USER':'COM_DONORCART_CHECKOUT_LOGOUT_AND_CONTINUE'))?></a>)</span></p>
 		<?php //$this->includeLayout('form','default');
 		echo $this->loadTemplate('form');
 	} else {
-		$login_option = $this->params->get('login_option',1);
 
 		//only display the create account option if user registration is allowed on the site
 		$usersConfig = JComponentHelper::getParams('com_users');
