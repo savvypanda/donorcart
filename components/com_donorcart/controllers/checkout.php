@@ -46,7 +46,7 @@ class DonorcartControllerCheckout extends FOFController {
 			$this->task = $task = 'read';
 		}
 
-		$ordermodel = $this->getThisModel();
+		$ordermodel =& $this->getThisModel();
 		$order = $ordermodel->getItem();
 
 		//If the user is not correctly saved to the order and cart, correct that here
@@ -88,7 +88,7 @@ class DonorcartControllerCheckout extends FOFController {
 		}
 
 		$order_id = $ordermodel->getId();
-		$order = $ordermodel->reset()->setId($order_id)->getItem();
+		$order = $ordermodel->setId($order_id)->getItem();
 
 		if(!$order->cart_id || !is_object($order->cart) || empty($order->cart->items)) {
 			$this->layout = 'emptycart';
@@ -379,7 +379,7 @@ class DonorcartControllerCheckout extends FOFController {
 
 		//Step 4: save the payment details (save and refresh the order first, so the payment plugins have the most recent data to work with)
 		$ordermodel->save($orderdata);
-		$order = $ordermodel->reset()->setId($order_id)->getItem();
+		$order = $ordermodel->setId($order_id)->getItem();
 		$orderdata = array('donorcart_order_id'=>$order_id);
 
 		JPluginHelper::importPlugin('donorcart');
@@ -417,7 +417,7 @@ class DonorcartControllerCheckout extends FOFController {
 			if($this->params->get('review_option')==0) {
 				//Step 6: Submit the order (ONLY IF VALID AND THE COMPONENT PARAMETERS SPECIFY NO REVIEW STEP)
 				$htmloutput = '';
-				$order = $ordermodel->reset()->setId($order_id)->getItem(); //refresh the order in case it was modified since the beginning of the submit function
+				$order = $ordermodel->setId($order_id)->getItem(); //refresh the order in case it was modified since the beginning of the submit function
 				$orderdata = array(
 					'donorcart_order_id' => $order_id,
 					'status' => 'submitted'

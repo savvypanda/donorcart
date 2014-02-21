@@ -76,7 +76,7 @@ class DonorcartModelOrders extends FOFModel {
 	protected function onBeforeSave(&$data, &$table) {
 		if(!parent::onBeforeSave($data, $table)) return false;
 
-		$table->order_total = $this->updateOrderTotal(null, false);
+		//$table->order_total = $this->updateOrderTotal(null, false);
 		return true;
 	}
 

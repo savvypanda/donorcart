@@ -29,7 +29,7 @@
 					</div>
 				</td>
 				<td><?=JHtml::_('select.genericlist', $this->statuslist, 'statusfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->statusfilter)?></td>
-				<td><?=JHtml::_('select.genericlist', array(0=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),1=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurringfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->recurringfilter)?></td>
+				<td><?=JHtml::_('select.genericlist', array(''=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_SELECTONE'),0=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),1=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurringfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->recurringfilter)?></td>
 				<td></td>
 				<td><input type="text" name="emailfilter" value="<?=$this->emailfilter?>" onchange="document.adminForm.submit();" /></td>
 				<td><input type="text" name="itemfilter" value="<?=$this->itemfilter?>" onchange="document.adminForm.submit();" /></td>
