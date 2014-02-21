@@ -221,4 +221,13 @@ HEREDOC;
 			return $html;
 		}
 	}
+
+	/*
+	 * This function is called when an order is completed
+	 *
+	 * @param DonorcartModelOrders order The order that was completed
+	 */
+	public function onOrderCompletion($order) {
+		return;
+	}
 }

@@ -25,7 +25,12 @@
 				<field name="donatelink" type="text" default="https://secure-q.net/Pages/Post" label="Payment URL" description="Your secure checkout page." />
 				<field name="merchant_id" type="text" default="" label="Merchant ID" description="Your DonateLinq merchant ID." />
 				<field name="page_id" type="text" default="" label="Page ID" description="The Page ID in DonateLinq for the payment form you wish to display." />
-				<!--field name="donatelink" type="text" default="https://dlq4.donatelinq.net/qv10/Default.aspx?MerchantID=" label="Payment URL" description="Your secure checkout page." /-->
+				<field name="cc_fees_option" type="list" default="1" label="User pays CC Fee?" description="Allow, or even require, the user to pay the credit card processing fees">
+					<option value="0">No</option>
+					<option value="1">Optional</option>
+					<option value="2">Yes</option>
+				</field>
+				<field name="cc_fees_amount" type="text" default="3.2" label="CC Fee %" description="The amount of the credit card processing fees, in percent, that the user will be asked for" />
 				<!--field name="testmode" type="list" default="0" label="Test Mode" description="While in test mode, donatelinq will not process any payments made through it.">
 					<option value="0">No</option>
 					<option value="1">Yes</option>

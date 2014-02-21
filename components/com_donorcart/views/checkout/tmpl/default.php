@@ -8,7 +8,7 @@ if($this->params->get('load_jquery')) {
 }
 if($uiversion = $this->params->get('jqueryui_version')) {
 	JFactory::getDocument()->addScript('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/jquery-ui.min.js');
-	if($uitheme = $this->params->get('jquerui_theme')) {
+	if($uitheme = $this->params->get('jqueryui_theme')) {
 		JFactory::getDocument()->addStyleSheet('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/themes/'.$uitheme.'/jquery-ui.min.css');
 	}
 }

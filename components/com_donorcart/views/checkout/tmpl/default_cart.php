@@ -1,5 +1,6 @@
 <?php defined('_JEXEC') or die("Restricted Access");
 $total = (!empty($this->item->cart->items) && is_array($this->item->cart->items))?count($this->item->cart->items):0;
+$locked = in_array($this->item->status,array('submitted','complete'));
 ?>
 
 <table class="dcart-table">
@@ -15,7 +16,7 @@ $total = (!empty($this->item->cart->items) && is_array($this->item->cart->items)
 			<td colspan='3'>
 				<span id='dcart-subtotal'><?=JText::_('COM_DONORCART_SUBTOTAL')?>:<strong> $<?=number_format($this->item->cart->subtotal, 2)?></strong></span>
 				<div class="dcart-cartbuttons">
-					<a class="btn btn-warning" href="<?php echo JRoute::_('index.php?option=com_donorcart&task=emptyCart&'.JSession::getFormToken().'=1'); ?>"><?=JText::_('COM_DONORCART_EMPTY_CART')?></a>
+					<a class="btn btn-warning<?=($locked?' order-locked':'')?>" href="<?php echo JRoute::_('index.php?option=com_donorcart&task=emptyCart&'.JSession::getFormToken().'=1'); ?>"><?=JText::_('COM_DONORCART_EMPTY_CART')?></a>
 				</div>
 			</td>
 		</tr>
@@ -34,7 +35,7 @@ $total = (!empty($this->item->cart->items) && is_array($this->item->cart->items)
 					</td>
 					<td class='dcart-item-price'>
 						<span>$<?=number_format($item->price, 2)?></span>
-							<a class='dcart-remove' href='<?=JRoute::_('index.php?option=com_donorcart&task=remove&item='.$id.'&'.JSession::getFormToken().'=1')?>'><?=JText::_('COM_DONORCART_REMOVE_ITEM')?></a>
+							<a class='dcart-remove<?=($locked?' order-locked':'')?>' href='<?=JRoute::_('index.php?option=com_donorcart&task=remove&item='.$id.'&'.JSession::getFormToken().'=1')?>'><?=JText::_('COM_DONORCART_REMOVE_ITEM')?></a>
 					</td>
 				</tr>
 			<?php endforeach;

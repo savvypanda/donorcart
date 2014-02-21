@@ -7,7 +7,7 @@ $params = JComponentHelper::getParams('com_donorcart');
 // Joomla! editor object
 $editor = JFactory::getEditor();
 ?>
-<form action="index.php" method="post" name="adminForm">
+<form action="index.php" method="post" name="adminForm" id="adminForm">
 	<fieldset>
 		<legend><?php echo JText::_('COM_DONORCART_ORDER_LEGEND_USER'); ?></legend>
 		<?php if($this->item->user_id && ($order_user = JFactory::getUser($this->item->user_id))): ?>
@@ -28,9 +28,8 @@ $editor = JFactory::getEditor();
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ID_LABEL') ?></strong>: <?php echo $this->item->donorcart_order_id; ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_STATUS_LABEL') ?></strong>: <?php echo $this->item->status; ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_TOTAL_LABEL') ?></strong>: <?php echo $this->item->order_total; ?></p>
+		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_RECURRING_LABEL') ?></strong>: <?php if($this->item->cart_id && is_object($this->item->cart)) echo JText::_(($this->item->cart->recurring)?'COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING':'COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'); ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_SPECIAL_INSTRUCTIONS_LABEL') ?></strong>: <?php echo $this->item->special_instr; ?></p>
-		<p><strong><?= JText::_('COM_DONORCART_ORDER_NOTES_LABEL') ?></strong>: <?php echo $this->item->notes; ?></p>
-		<p><strong><?= JText::_('COM_DONORCART_ORDER_ERRORS_LABEL') ?></strong>: <?php echo $this->item->errors; ?></p>
 		<?php if($this->item->viewtoken): ?>
 			<p><strong><?= JText::_('COM_DONORCART_ORDER_LINK_LABEL') ?></strong>: <?php echo str_replace('/administrator','',JRoute::_('index.php',true,($params->get('use_ssl',0)==0)?-1:1)).'?option=com_donorcart&view=order&id='.$this->item->donorcart_order_id.'&viewtoken='.$this->item->viewtoken; ?></p>
 		<?php endif; ?>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" method="upgrade" group="donorcart">
+	<name>Donorcart - Order Emails</name>
+	<author>Savvy Panda</author>
+	<creationDate>February 2014</creationDate>
+	<copyright>(C) 2014 Savvy Panda. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later</license>
+	<authorEmail>support@savvypanda.com</authorEmail>
+	<authorUrl>http://savvypanda.com</authorUrl>
+	<version>0.1.0</version>
+	<description>Send an email to admins and/or users when an order is completed.</description>
+
+	<files>
+		<filename plugin="orderemails">orderemails.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+	<config>
+		<fields name="params">
+			<fieldset name="admin" label="Admin Email">
+				<field name="send_confirmation_email_to_admin" default="0" type="list" label="Send Admin Email" description="">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field name="admin_emails" type="text" default="" label="Admin Emails" description="" />
+				<field name="admin_email_subject" type="text" default="Order Complete" label="Admin Email Subject" description="" />
+				<field name="admin_email_ishtml" type="list" default="0" label="Is HTML" description="">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+			</fieldset>
+			<fieldset name="user" label="User Email">
+				<field name="send_confirmation_email_to_user" default="0" type="list" label="Send User Email" description="">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field name="user_email_subject" type="text" default="Thank you for your Donation" label="User Email Subject" description="" />
+			</fieldset>
+			<field name="user_email_ishtml" type="list" default="0" label="Is HTML" description="">
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+		</fields>
+	</config>
+</extension>

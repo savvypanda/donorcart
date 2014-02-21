@@ -20,4 +20,8 @@ class DonorcartViewCheckout extends FOFViewHtml {
 
 		return parent::display();
 	}
+
+	protected function onDisplay($tpl = null) {
+		return $this->onAdd($tpl);
+	}
 }

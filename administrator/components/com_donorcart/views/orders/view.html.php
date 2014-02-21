@@ -10,6 +10,7 @@ class DonorcartViewOrders extends FOFViewHtml {
 		foreach($statuses as $status) $this->statuslist[htmlspecialchars($status)] = $status;
 
 		$this->statusfilter = $model->getState('statusfilter','');
+		$this->recurringfilter = $model->getState('recurringfilter','');
 		$this->itemfilter = $model->getState('itemfilter','');
 		$this->emailfilter = $model->getState('emailfilter','');
 		$this->startdate = $model->getState('startdate', '');

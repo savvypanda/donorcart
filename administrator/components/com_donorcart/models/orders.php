@@ -19,6 +19,9 @@ class DonorcartModelOrders extends FOFModel {
 		$statusfilter = JRequest::getString('statusfilter');
 		if(!is_null($statusfilter) && $statusfilter != $this->getState('statusfilter',false)) $this->setState('statusfilter',$statusfilter);
 
+		$recurringfilter = JRequest::getString('recurringfilter');
+		if(!is_null($recurringfilter) && $recurringfilter != $this->getState('recurringfilter',false)) $this->setState('recurringfilter',$recurringfilter);
+
 		$itemfilter = JRequest::getString('itemfilter');
 		if(!is_null($itemfilter) && $itemfilter != $this->getState('itemfilter',false)) $this->setState('itemfilter', $itemfilter);
 
@@ -45,9 +48,13 @@ class DonorcartModelOrders extends FOFModel {
 		if($statusfilter = $this->getState('statusfilter')) {
 			$query->where('o.status='.$this->_db->quote($statusfilter));
 		}
+		if($recurringfilter = $this->getState('recurringfilter')) {
+			$query->innerJoin('#__donorcart_carts c ON o.cart_id = c.cart_id');
+			$query->where('c.recurring='.$this->_db->quote($recurringfilter));
+		}
 		if($itemfilter = $this->getState('itemfilter')) {
 			$query->innerJoin('#__donorcart_cart_items i ON o.cart_id = i.cart_id');
-			$query->where(' ( i.name LIKE '.$this->_db->quote('%'.$itemfilter.'%').' OR i.sku LIKE '.$this->_db->quote('%'.$itemfilter.'%').' ) ');
+			$query->where('(i.name LIKE '.$this->_db->quote('%'.$itemfilter.'%').' OR i.sku LIKE '.$this->_db->quote('%'.$itemfilter.'%').')');
 		}
 		if($emailfilter = $this->getState('emailfilter')) {
 			$query->where('o.email LIKE '.$this->_db->quote('%'.$emailfilter.'%'));

@@ -4,6 +4,9 @@ require_once(JPATH_SITE.DIRECTORY_SEPARATOR.'administrator'.DIRECTORY_SEPARATOR.
 class plgDonorcartDonatelinq extends JPluginDonorcart {
 	protected $_name = 'donatelinq';
 
+	private $cc_fees_sku = 'DNLQ-PROCESSING-FEE';
+	private $cc_fees_name = 'Processing Fee';
+
 	/*
 	 * Displays the payment form (assuming the user selects this payment method)
 	 *
@@ -32,7 +35,7 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 				reset($recurring_options);
 				$recurring_code = '<input type="hidden" name="selFrequency" value="'.key($recurring_options).'">';
 			} else {
-				$recurring_code = '<p><label for="selFrequency">Recurring Frequency: </label><select name="selFrequency">';
+				$recurring_code = '<p><label for="selFrequency">Recurring Frequency: </label><select name="selFrequency" id="selFrequency">';
 				foreach($recurring_options as $value => $text) {
 					$recurring_code .= '<option value="'.$value.'"'.(($value==$selected_frequency)?' selected="selected"':'').'>'.$text.'</option>';
 				}
@@ -92,8 +95,22 @@ HEREDOC;
 			}
 		}
 
-		$form = $recurring_code;
+		$cc_code = '';
+		$cc_fees_option = $this->params->get('cc_fees_option');
+		$cc_fees_amount = $this->params->get('cc_fees_amount',0);
+		$cc_fees_total = $this->_calc_cc_processing_fee($order);
+		if(!is_numeric($cc_fees_amount)) $cc_fees_amount = 0;
+		$cc_fees_amount = round($cc_fees_amount,2);
+		if($cc_fees_option==1 && $cc_fees_amount > 0) {
+			$pay_cc_fees = array_key_exists('pay_cc_fees',$payment_info)?$payment_info['pay_cc_fees']:false;
+			$cc_code = '<p><input type="checkbox" name="pay_cc_fees" id="pay-cc-fees-option"'.($pay_cc_fees?' checked="checked"':'').' value="1"><label for="pay-cc-fees-option">Pay the '.$cc_fees_amount.'% ($'.$cc_fees_total.') credit card processing fee.</label></p>';
+		}
+
+		$form = $recurring_code.$cc_code;
 		$form .= '<p>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</p>';
+		if($cc_fees_option==2 && is_numeric($cc_fees_amount)) {
+			$form .= '<p>Your donation will include a '.$cc_fees_amount.'% ($'.$cc_fees_total.') credit card processing fee.</p>';
+		}
 		return $form;
 	}
 
@@ -113,8 +130,34 @@ HEREDOC;
 	public function onSubmitOrder($order, $params, $payment_name) {
 		if(!empty($payment_name) && $payment_name != $this->getName()) return;
 		$payment_name=$this->getName();
+		$cc_fees_option = $this->params->get('cc_fees_option');
+		if($cc_fees_option==0) {
+			$pay_cc_fees=0;
+		} elseif($cc_fees_option==2) {
+			$pay_cc_fees=1;
+		} else {
+			$pay_cc_fees = JRequest::getInt('pay_cc_fees',0);
+		}
+		$current_fee_item = false;
+		foreach($order->cart->items as $item_id => $item) {
+			if($item->sku==$this->cc_fees_sku && $item->name==$this->cc_fees_name) {
+				$current_fee_item = $item_id;
+			}
+		}
+		if($pay_cc_fees) {
+			$cc_fees_total = $this->_calc_cc_processing_fee($order);
+			if(!$current_fee_item) {
+				FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($this->cc_fees_sku, $this->cc_fees_name, $cc_fees_total, '1', '', '', false, true);
+			} elseif($order->cart->items[$current_fee_item]->price != $cc_fees_total) {
+				FOFModel::getAnInstance('carts','DonorcartModel')->updateItemInCart($current_fee_item, null, null, $cc_fees_total, '1', null, null, true);
+			}
+		} else {
+			if($current_fee_item) {
+				FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($current_fee_item, true);
+			}
+		}
 		$recurring_frequency = JRequest::getString('selFrequency','One Time');
-		$infohash = array('selFrequency'=>$recurring_frequency);
+		$infohash = array('selFrequency'=>$recurring_frequency, 'pay_cc_fees'=>$pay_cc_fees);
 		return array(
 			'payment_type' => $payment_name,
 			'infohash' => json_encode($infohash)
@@ -197,7 +240,7 @@ HEREDOC;
 	$address_code
 	$recurring_code
 	<input type="hidden" name="donationComments" value="{$order->special_instr}" />
-	<textarea name="" maxlength="512"></textarea><br />
+	<input type="hidden" name="custom_7" value="{$order->special_instr}" />
 	<p>You are being redirected to our secure processing server.<br />
 		If you are not redirected within 5 seconds <input type="submit" id="dcart-donatelinq-submitformbutton" value="Click here" /></p>
 	<script type="text/javascript">
@@ -229,6 +272,9 @@ HEREDOC;
 			$payment_info = json_decode($order->payment->infohash,true);
 			if(empty($payment_info)) return;
 			$html = '<p><strong>Payment Amount</strong>: '.$order->order_total.'</p>';
+			if($payment_info['pay_cc_fees'] && $this->params->get('cc_fees_option',1)==1) {
+				$html .= '<p><strong>Pay CC Fees?</strong>: '.($payment_info['pay_cc_fees']?'Yes':'No').'</p>';
+			}
 
 			//only display the payment frequency if it makes sense (if there is more than one option available and one has been sselected)
 			$allow_recurring_donations = $params->get('allow_recurring_donations',0);
@@ -450,5 +496,19 @@ HEREDOC;
 		if($this->params->get('recur_semiannual',false)) $recurring_options['Semi-Annual'] = 'Semi-Annual';
 		if($this->params->get('recur_yearly',false)) $recurring_options['Yearly'] = 'Yearly';
 		return $recurring_options;
+	}
+
+	private function _calc_cc_processing_fee($order) {
+		if(!is_object($order->cart) || empty($order->cart->items)) return 0;
+		$cc_fees_amount = $this->params->get('cc_fees_amount',0);
+		if(!is_numeric($cc_fees_amount)) return 0;
+		$cc_fees_amount = round($cc_fees_amount,2)/100;
+		$cart_subtotal = 0;
+		foreach($order->cart->items as $item) {
+			if($item->sku!=$this->cc_fees_sku && $item->name!=$this->cc_fees_name) {
+				$cart_subtotal += ($item->qty * $item->price);
+			}
+		}
+		return round($cart_subtotal*$cc_fees_amount,2);
 	}
 }

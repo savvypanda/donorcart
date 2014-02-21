@@ -11,7 +11,7 @@ $recurring_flag = $this->params->get('allow_recurring_donations',0);
 	<?php endif; ?>
 	<?php if($recurring_flag==1) { ?>
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_RECURRING')?></h3>
-		<div><?=JText::_($this->item->recurring?'COM_DONORCART_CHECKOUT_RECURRING_YES':'COM_DONORCART_CHECKOUT_RECURRING_NO')?></div>
+		<div><?=JText::_($this->item->cart->recurring?'COM_DONORCART_CHECKOUT_RECURRING_YES':'COM_DONORCART_CHECKOUT_RECURRING_NO')?></div>
 	<?php } ?>
 	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_REVIEW')?></h3>
 	<div id="donorcart_review">
@@ -99,10 +99,10 @@ $recurring_flag = $this->params->get('allow_recurring_donations',0);
 		<form method="POST" class="donorcart_action_form" action="<?=JRoute::_('index.php?option=com_donorcart')?>">
 			<input type="hidden" name="view" value="checkout" />
 			<input type="hidden" name="format" value="raw" />
-			<input type="hidden" name="task" value="revise" />
+			<input type="hidden" name="task" value="" />
 			<?=JHtml::_('form.token')?>
 			<input type="submit" value="<?=JText::_('COM_DONORCART_CHECKOUT_ACTION_REVISE')?>" />
-			<input type="button" onclick="this.form.task='confirm';this.form.submit();" value="<?=JText::_('COM_DONORCART_CHECKOUT_ACTION_CONFIRM')?>" />
+			<input type="button" onclick="this.form.task.value='confirm';jQuery(this.form).submit();" value="<?=JText::_('COM_DONORCART_CHECKOUT_ACTION_CONFIRM')?>" />
 		</form>
 
 		<a href="<?=JRoute::_('index.php?option=com_donorcart&task=submit&'.JSession::getFormToken().'=1')?>">Confirm</a>

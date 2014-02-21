@@ -29,7 +29,7 @@
 					</div>
 				</td>
 				<td><?=JHtml::_('select.genericlist', $this->statuslist, 'statusfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->statusfilter)?></td>
-				<td><?=JHtml::_('select.genericlist', array(0=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),1=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurring', array('onchange'=>'document.adminForm.submit();'), '', '', JRequest::getInt('recurring',0))?></td>
+				<td><?=JHtml::_('select.genericlist', array(0=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),1=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurringfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->recurringfilter)?></td>
 				<td></td>
 				<td><input type="text" name="emailfilter" value="<?=$this->emailfilter?>" onchange="document.adminForm.submit();" /></td>
 				<td><input type="text" name="itemfilter" value="<?=$this->itemfilter?>" onchange="document.adminForm.submit();" /></td>
@@ -53,7 +53,7 @@
 						<td><?=$item->user_id?></td>
 						<td><?=$item->created_on?></td>
 						<td><?=$item->status?></td>
-						<td><?=($item->recurring?'Recurring':'One Time')?></td>
+						<td><?=(($item->cart_id && is_object($item->cart))?($item->cart->recurring?'Recurring':'One Time'):'')?></td>
 						<td><?=$item->order_total?></td>
 						<td><?=$item->email?></td>
 						<td><?=(($item->cart_id && is_object($item->cart))?DonorcartHelperFormat::formatItems($item->cart->items):'')?></td>

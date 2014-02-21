@@ -24,6 +24,7 @@ class DonorcartModelOrders extends FOFModel {
 				}
 			}
 		}
+		//this code is here to limit the orders a user can view to their own completed orders
 		$this->setState('user_id',$user->id);
 		$this->setState('status','complete');
 	}
@@ -32,7 +33,7 @@ class DonorcartModelOrders extends FOFModel {
 		return $this;
 	}
 
-	public function updateOrderTotal($subtotal = null, $savetotal = true) {
+	public function updateOrderTotal($subtotal = null, $savetotal = true, $status = NULL) {
 		if(!$this->getId()) return false;
 		if(!$subtotal) {
 			$subtotal = $this->record->cart->subtotal;
@@ -41,7 +42,7 @@ class DonorcartModelOrders extends FOFModel {
 		//Todo: If we have more calculations to do, do them here
 
 		if($savetotal && $total != $this->record->order_total) {
-			$this->_db->setQuery('UPDATE #__donorcart_orders SET order_total='.$this->_db->quote($total).' WHERE donorcart_order_id='.$this->_db->quote($this->record->donorcart_order_id));
+			$this->_db->setQuery('UPDATE #__donorcart_orders SET order_total='.$this->_db->quote($total).(is_null($status)?'':', status='.$this->_db->quote($status)).' WHERE donorcart_order_id='.$this->_db->quote($this->record->donorcart_order_id));
 			$this->_db->query();
 			$this->record->order_total = $total;
 		}
@@ -85,30 +86,35 @@ class DonorcartModelOrders extends FOFModel {
 		if(!is_object($record) || $record->status=='submitted' || $record->status=='complete') {
 			return false;
 		}
-		//also do not allow it to be deleted if the payment has been completed.
-		if($record->payment_id && is_object($record->payment) && $record->payment->status == 'completed') {
-			return false;
-		}
 		$result = parent::onBeforeDelete($id, $table);
-
-		//first remove any payment associated with this order
-		if($result && $record->payment_id) {
-			$result = FOFModel::getTmpInstance('payments','DonorcartModel')->setId($record->payment_id)->delete();
-		}
-		//then remove any non-locked addresses associated with this order
-		if($result && $record->shipping_address_id && $record->shipping_address->locked != 1) {
-			$result = FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->shipping_address_id)->delete();
-		}
-		if($result && $record->billing_address_id && $record->shipping_address_id != $record->billing_address_id && $record->billing_address->locked != 1) {
-			$result = FOFModel::getTmpInstance('addresses','DonorcartModel')->setId($record->billing_address_id)->delete();
-		}
-
 		return $result;
 	}
 
 	protected function onAfterDelete($id) {
 		JFactory::getSession()->set('order_id',null);
+
+		//first let's clear the cart
 		FOFModel::getAnInstance('carts','DonorcartModel')->delete();
+
+		//then remove any payment associated with this order
+		if($this->_recordForDeletion->payment_id) {
+			FOFModel::getTmpInstance('payments','DonorcartModel')->setId($this->_recordForDeletion->payment_id)->delete();
+		}
+
+		//then remove any non-locked addresses associated with this order
+		$addressModel = FOFModel::getAnInstance('addresses','DonorcartModel');
+		if($this->_recordForDeletion->shipping_address_id) {
+			$shipping_address = $addressModel->getItem($this->_recordForDeletion->shipping_address_id);
+			if(is_object($shipping_address) && !$shipping_address->locked) {
+				$addressModel->delete();
+			}
+		}
+		if($this->_recordForDeletion->billing_address_id && $this->_recordForDeletion->billing_address_id != $this->_recordForDeletion->shipping_address_id) {
+			$billing_address = $addressModel->getItem($this->_recordForDeletion->billing_address_id);
+			if(is_object($billing_address) && !$billing_address->locked) {
+				$addressModel->delete();
+			}
+		}
 		return parent::onAfterDelete($id);
 	}
 
@@ -132,9 +138,24 @@ class DonorcartModelOrders extends FOFModel {
 		return $this->setId($order->donorcart_order_id);
 	}
 
+	public function resetOrder($order_id = null) {
+		if(!$order_id || !is_numeric($order_id)) {
+			$order_id = $this->getId();
+			if(!$order_id) return false;
+		}
+		//$order = $this->getItem();
+		//if(!is_object($order) || !$order->donorcart_order_id) return false;
+
+		$query = 'UPDATE #__donorcart_orders SET status="cart" WHERE donorcart_order_id='.$order_id;
+		$this->_db->setQuery($query);
+		$this->_db->query();
+
+		return true;
+	}
+
 	public function updateUserData($order_id, $user_id = null, $email = null, $status = null) {
 		$order = $this->getItem($order_id);
-		if(!$order->donorcart_order_id || !is_object($order) || !$order->cart_id || !is_object($order->cart)) return false;
+		if(!is_object($order) || !$order->donorcart_order_id || !$order->cart_id || !is_object($order->cart)) return false;
 		if($user_id) {
 			if(!($user = JFactory::getUser($user_id))) return false;
 			$email = $user->email;

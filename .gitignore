@@ -6,7 +6,6 @@
 
 # Do not ignore the component or media
 !components/
-!components/*
 !components/com_donorcart/
 !components/com_donorcart/*
 !components/com_donorcart/controllers/
@@ -36,9 +35,7 @@
 !components/com_donorcart/views/orders/tmpl/
 !components/com_donorcart/views/orders/tmpl/*
 !administrator/
-!administrator/*
 !administrator/components/
-!administrator/components/*
 !administrator/components/com_donorcart/
 !administrator/components/com_donorcart/*
 !administrator/components/com_donorcart/helpers/
@@ -66,7 +63,6 @@
 !administrator/components/com_donorcart/views/orders/tmpl/
 !administrator/components/com_donorcart/views/orders/tmpl/*
 !media/
-!media/*
 !media/com_donorcart/
 !media/com_donorcart/*
 !media/com_donorcart/images/
@@ -74,19 +70,15 @@
 
 # Do not ignore the module
 !modules/
-!modules/*
 !modules/mod_donorcart/
 !modules/mod_donorcart/*
 
 # Do not ignore our plugins
 !plugins/
-!plugins/*
 !plugins/content/
-!plugins/content/*
 !plugins/content/donorcart_cart/
 !plugins/content/donorcart_cart/*
 !plugins/donorcart/
-!plugins/donorcart/*
 !plugins/donorcart/authorizenet/
 !plugins/donorcart/authorizenet/*
 !plugins/donorcart/authorizenet/anet_php_sdk/
@@ -105,14 +97,7 @@
 !plugins/donorcart/sagepay/*
 !plugins/donorcart/testhelp/
 !plugins/donorcart/testhelp/*
-
-# Ignore miscellaneous index.html and index.php files
-components/index.html
-administrator/index.html
-administrator/index.php
-administrator/components/index.html
-media/index.html
-modules/index.html
-plugins/index.html
-plugins/content/index.html
-plugins/donorcart/index.html
+!plugins/donorcart/orderemails/
+!plugins/donorcart/orderemails/*
+!plugins/donorcart/orderemails/tmpl/
+!plugins/donorcart/orderemails/tmpl/*

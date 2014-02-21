@@ -56,7 +56,7 @@ class DonorcartModelCarts extends FOFModel {
 		return $this->setId($cart->donorcart_cart_id);
 	}
 
-	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '', $img = '', $recurring = false) {
+	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '', $img = '', $recurring = false, $from_checkout = false) {
 		if(!$this->id) {
 			//if we do not already have a cart, create one and then proceed
 			$this->createEmptyCart();
@@ -66,7 +66,7 @@ class DonorcartModelCarts extends FOFModel {
 			$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 			if($ordermodel->getid()) {
 				$order = $ordermodel->getItem();
-				if($order->status == 'submitted' || $order->status == 'complete') return false;
+				if($order->status == 'complete' || (!$from_checkout && $order->status == 'submitted')) return false;
 			}
 		}
 		$this->getItem();
@@ -110,12 +110,60 @@ class DonorcartModelCarts extends FOFModel {
 		$this->_db->query();
 		//$this->record->subtotal = $subtotal;
 		if($ordermodel && $ordermodel->getId()) {
-			$ordermodel->updateOrderTotal($subtotal);
+			$ordermodel->updateOrderTotal($subtotal, true, $from_checkout?'checkout':'cart');
 		}
 		return true;
 	}
 
-	public function removeItemFromCart($cart_item_id) {
+	public function updateItemInCart($item_id, $sku=null, $name=null, $price=null, $qty=null, $url=null, $img=null, $from_checkout=false) {
+		//if we do not already have a cart, we can't do anything
+		if(!$this->id) return false;
+		//if the cart does not have the item with the correct ID, we shouldn't edit it
+		$this->getItem();
+		if(!array_key_exists($item_id, $this->record->items)) return false;
+
+		//We need to make sure it's not part of a submitted order
+		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
+		if($ordermodel->getid()) {
+			$order = $ordermodel->getItem();
+			if($order->status == 'complete' || (!$from_checkout && $order->status == 'submitted')) return false;
+		}
+
+		$newitem =& $this->record->items[$item_id];
+		if(!is_null($sku)) $newitem->sku = $sku;
+		if(!is_null($name)) $newitem->name = $name;
+		if(!is_null($price)) $newitem->price = doubleval($price);
+		if(!is_null($qty)) $newitem->qty = abs(intval($qty));
+		if(!is_null($url)) $newitem->url = $url;
+		if(!is_null($img)) $newitem->img = $img;
+
+		$query = sprintf('UPDATE #__donorcart_cart_items SET `sku`=%s, `name`=%s, `price`=%s, `qty`=%s, `url`=%s, `img`=%s WHERE donorcart_cart_item_id=%s',
+			$this->_db->quote($newitem->sku),
+			$this->_db->quote($newitem->name),
+			$this->_db->quote($newitem->price),
+			$this->_db->quote($newitem->qty),
+			$this->_db->quote($newitem->url),
+			$this->_db->quote($newitem->img),
+			$this->_db->quote($item_id)
+		);
+		$this->_db->setQuery($query);
+		$this->_db->query();
+
+		$subtotal = 0;
+		foreach($this->record->items as $item) {
+			$subtotal += $item->qty * $item->price;
+		}
+
+		$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).' WHERE donorcart_cart_id='.$this->id;
+		$this->_db->setQuery($query);
+		$this->_db->query();
+		if($ordermodel && $ordermodel->getId()) {
+			$ordermodel->updateOrderTotal($subtotal, true, $from_checkout?'checkout':'cart');
+		}
+		return true;
+	}
+
+	public function removeItemFromCart($cart_item_id, $from_checkout = false) {
 		if(!$this->id) {
 			//if we do not already have a cart, we cannot remove any item from it!
 			return false;
@@ -124,7 +172,7 @@ class DonorcartModelCarts extends FOFModel {
 		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		if($ordermodel->getid()) {
 			$order = $ordermodel->getItem();
-			if($order->status=='submitted' || $order->status=='complete') return false;
+			if($order->status=='complete' || (!$from_checkout && $order->status == 'submitted')) return false;
 		}
 
 		$this->getItem();
@@ -151,21 +199,20 @@ class DonorcartModelCarts extends FOFModel {
 				return $this->delete();
 			}
 		} else {
-			//we need to update the cart subtotal and the order total (if applicable)
+			//we need to update the cart subtotal and the order total (if applicable), and reset the status to 'cart'
 			$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).' WHERE donorcart_cart_id='.$this->_db->quote($this->id);
 			$this->_db->setQuery($query);
 			$this->_db->query();
 
-			$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 			if($ordermodel->getId()) {
-				$ordermodel->updateOrderTotal($subtotal);
+				$ordermodel->updateOrderTotal($subtotal, true, $from_checkout?'checkout':'cart');
 			}
 		}
 
 		return true;
 	}
 
-	public function enableRecurring() {
+	public function enableRecurring($from_checkout = false) {
 		//if we do not already have a cart, calling this function on an empty cart is pointless
 		if(!$this->id) return false;
 
@@ -173,7 +220,7 @@ class DonorcartModelCarts extends FOFModel {
 		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		if($ordermodel->getid()) {
 			$order = $ordermodel->getItem();
-			if($order->status == 'submitted' || $order->status == 'complete') return false;
+			if($order->status == 'complete' || (!$from_checkout && $order->status == 'submitted')) return false;
 		}
 
 		$query = 'UPDATE #__donorcart_carts SET recurring=1 WHERE donorcart_cart_id='.$this->id;
@@ -182,7 +229,7 @@ class DonorcartModelCarts extends FOFModel {
 		return true;
 	}
 
-	public function disableRecurring() {
+	public function disableRecurring($from_checkout = false) {
 		//if we do not already have a cart, calling this function on an empty cart is pointless
 		if(!$this->id) return false;
 
@@ -190,7 +237,7 @@ class DonorcartModelCarts extends FOFModel {
 		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		if($ordermodel->getid()) {
 			$order = $ordermodel->getItem();
-			if($order->status == 'submitted' || $order->status == 'complete') return false;
+			if($order->status == 'complete' || (!$from_checkout && $order->status == 'submitted')) return false;
 		}
 
 		$query = 'UPDATE #__donorcart_carts SET recurring=0 WHERE donorcart_cart_id='.$this->id;

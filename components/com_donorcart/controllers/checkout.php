@@ -13,6 +13,7 @@ class DonorcartControllerCheckout extends FOFController {
 
 		$this->registerTask('remove','_remove_item');
 		$this->registerTask('emptyCart','_empty_cart');
+		$this->registerTask('resetOrder','_reset_order');
 		$this->registerTask('setRecurring','_enable_recurring');
 		$this->registerTask('setNoRecurring','_disable_recurring');
 
@@ -49,7 +50,7 @@ class DonorcartControllerCheckout extends FOFController {
 		$order = $ordermodel->getItem();
 
 		//If the user is not correctly saved to the order and cart, correct that here
-		if($order->donorcart_order_id && !in_array($task,array('login','logout','register','emptyCart','postback'))) {
+		if($order->donorcart_order_id && !in_array($task,array('login','logout','register','emptyCart','resetOrder','postback'))) {
 			$user = JFactory::getUser();
 			if($user->id) {
 				if($order->user_id != $user->id) {
@@ -92,8 +93,7 @@ class DonorcartControllerCheckout extends FOFController {
 		if(!$order->cart_id || !is_object($order->cart) || empty($order->cart->items)) {
 			$this->layout = 'emptycart';
 		} elseif($order->status == 'complete') {
-			$this->_clearSession();
-			$this->_sendConfirmationEmails();
+			$this->_completeOrder();
 			$this->layout = 'thankyou';
 		} elseif($this->layout != 'review') {
 			$this->layout = 'default';
@@ -239,7 +239,7 @@ class DonorcartControllerCheckout extends FOFController {
 	public function _remove_item() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$id = JRequest::getInt('item',null);
-		FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($id);
+		FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($id, true);
 		//FOFModel::getTmpInstance('orders','DonorcartModel')->calcOrderTotal($this->order);
 		//$this->order = FOFModel::getTmpInstance('orders','DonorcartModel')->getItem($this->order->donorcart_order_id);
 		return true;
@@ -251,6 +251,11 @@ class DonorcartControllerCheckout extends FOFController {
 	}
 	public function _disable_recurring() {
 		FOFModel::getAnInstance('carts','DonorcartModel')->disableRecurring();
+		return true;
+	}
+	public function _reset_order() {
+		$returnval = $this->getThisModel()->resetOrder();
+		if($returnval === true && JRequest::getCmd('format')=='raw') return 'success';
 		return true;
 	}
 
@@ -372,7 +377,11 @@ class DonorcartControllerCheckout extends FOFController {
 		$orderdata['billing_address_id']=$billto_id;
 
 
-		//Step 4: save the payment details
+		//Step 4: save the payment details (save and refresh the order first, so the payment plugins have the most recent data to work with)
+		$ordermodel->save($orderdata);
+		$order = $ordermodel->reset()->setId($order_id)->getItem();
+		$orderdata = array('donorcart_order_id'=>$order_id);
+
 		JPluginHelper::importPlugin('donorcart');
 		$dispatcher = JDispatcher::getInstance();
 		$payment_name = JRequest::getVar('payment_method','');
@@ -401,7 +410,8 @@ class DonorcartControllerCheckout extends FOFController {
 		}
 
 		//Step 5: Save the order.
-		$ordermodel->save($orderdata);
+		if(count($orderdata > 1)) $ordermodel->save($orderdata);
+
 
 		if($is_valid) {
 			if($this->params->get('review_option')==0) {
@@ -495,7 +505,7 @@ class DonorcartControllerCheckout extends FOFController {
 		return true;
 	}
 
-	protected function _prepareAddress($type, $prefix, &$is_valid) {
+	private function _prepareAddress($type, $prefix, &$is_valid) {
 		if(!$is_valid) return false;
 		$order = $this->getThisModel()->getItem();
 
@@ -523,7 +533,7 @@ class DonorcartControllerCheckout extends FOFController {
 		return $data;
 	}
 
-	protected function _validateAddress(&$data, $type) {
+	private function _validateAddress(&$data, $type) {
 		if(is_object($data)) {
 			$editdata = get_object_vars($data);
 		} elseif(is_array($data)) {
@@ -545,7 +555,7 @@ class DonorcartControllerCheckout extends FOFController {
 		return $is_valid;
 	}
 
-	protected function _lock_addresses() {
+	private function _lock_addresses() {
 		$order = $this->getThisModel()->getItem();
 
 		if($order->shipping_address_id && !$order->shipping_address->locked) {
@@ -607,20 +617,16 @@ class DonorcartControllerCheckout extends FOFController {
 		return true;
 	}
 
-	public function _clearSession() {
+	private function _completeOrder() {
+		$ordermodel =& $this->getThisModel();
+		$order = $ordermodel->getItem();
+
+		JPluginHelper::importPlugin('donorcart');
+		$dispatcher = JDispatcher::getInstance();
+		$dispatcher->trigger('onOrderCompletion', array($order));
+
 		$session = JFactory::getSession();
 		$session->set('cart_id',null);
 		$session->set('order_id',null);
-	}
-
-	public function _sendConfirmationEmails() {
-		if($this->params->get('send_confirmation_email_to_admin')) {
-			$data = $this->params->get('admin_email_template');
-			//TODO: Implement the rest of this functionality
-		}
-		if($this->params->get('send_confirmation_email_to_user')) {
-			$data = $this->params->get('user_email_template');
-			//TODO: Implement the rest of this functionality
-		}
 	}
 }
