@@ -17,101 +17,14 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 	 */
 	public function onDisplayPaymentForm($order, $params) {
 		if(!$this->isActive()) return;
-		$allow_recurring_donations = $params->get('allow_recurring_donations',0);
-		if($allow_recurring_donations == 0) return;
-
-		$recurring_options = $this->_get_recurring_options();
-		if(count($recurring_options)==0) {
-			//There are no options to choose from. We don't need to display the frequency selector
-			return;
+		$path = JPluginHelper::getLayoutPath('donorcart', 'donatelinq', 'paymentform');
+		$contents = '';
+		if(file_exists($path)) {
+			ob_start();
+			include $path;
+			$contents = ob_get_clean();
 		}
-
-		$payment = isset($order->payment)?$order->payment:false;
-		$payment_info = $payment?json_decode($payment->infohash,true):array();
-		$selected_frequency = array_key_exists('selFrequency',$payment_info)?$payment_info['selFrequency']:'';
-
-		if($allow_recurring_donations==2) {
-			if(count($recurring_options)==1) {
-				reset($recurring_options);
-				$recurring_code = '<input type="hidden" name="selFrequency" value="'.key($recurring_options).'">';
-			} else {
-				$recurring_code = '<p><label for="selFrequency">Recurring Frequency: </label><select name="selFrequency" id="selFrequency">';
-				foreach($recurring_options as $value => $text) {
-					$recurring_code .= '<option value="'.$value.'"'.(($value==$selected_frequency)?' selected="selected"':'').'>'.$text.'</option>';
-				}
-				$recurring_code .= '</select></p>';
-			}
-		} else {
-			if(count($recurring_options)==1) {
-				//The user may either select recurring or one-time. No select list required.
-				reset($recurring_options);
-				$recurring_default = key($recurring_options);
-				$recurring_code = <<<HEREDOC
-<input type="hidden" name="selFrequency" value="One Time">
-<script type="text/javascript">
-(function($){
-	var recurring_option = $('#donorcart_checkout_form input[name=recurring]');
-	function update_recurring_option() {
-		if(recurring_option.is(':checked')) {
-			$('#donorcart_checkout_form input[name=selFrequency]').val('$recurring_default');
-		} else {
-			$('#donorcart_checkout_form input[name=selFrequency]').val('One Time');
-		}
-	}
-	update_recurring_option();
-	recurring_option.change(update_recurring_option);
-})(jQuery);
-</script>
-HEREDOC;
-			} else {
-				//this is the part with the most options
-				$recurring_code = '<input type="hidden" name="selFrequency" value="One Time"><p id="dcart-donatelinq-frequencyouter"><label for="dcart-donatelinq-frequencyselector">Recurring Frequency: </label><select id="dcart-donatelinq-frequencyselector">';
-				foreach($recurring_options as $value => $text) {
-					$recurring_code .= '<option value="'.$value.'"'.(($value==$selected_frequency)?' selected="selected"':'').'>'.$text.'</option>';
-				}
-				$recurring_code .= '</select></p>';
-				$recurring_code .= <<<HEREDOC
-<script type="text/javascript">
-(function($){
-	var recurring_option = $('#donorcart_checkout_form input[name=recurring]');
-	var recurring_selector = $('#dcart-donatelinq-frequencyselector');
-	var recurring_container = $('#dcart-donatelinq-frequencyouter');
-	var recurring_input = $('#donorcart_checkout_form input[name=selFrequency]');
-	function update_recurring_options() {
-		if(recurring_option.is(':checked')) {
-			recurring_container.show();
-			recurring_input.val(recurring_selector.val());
-		} else {
-			recurring_container.hide();
-			recurring_input.val('One Time');
-		}
-	}
-	update_recurring_options();
-	recurring_option.change(update_recurring_options);
-	recurring_selector.change(update_recurring_options);
-})(jQuery);
-</script>
-HEREDOC;
-			}
-		}
-
-		$cc_code = '';
-		$cc_fees_option = $this->params->get('cc_fees_option');
-		$cc_fees_amount = $this->params->get('cc_fees_amount',0);
-		$cc_fees_total = $this->_calc_cc_processing_fee($order);
-		if(!is_numeric($cc_fees_amount)) $cc_fees_amount = 0;
-		$cc_fees_amount = round($cc_fees_amount,2);
-		if($cc_fees_option==1 && $cc_fees_amount > 0) {
-			$pay_cc_fees = array_key_exists('pay_cc_fees',$payment_info)?$payment_info['pay_cc_fees']:false;
-			$cc_code = '<p><input type="checkbox" name="pay_cc_fees" id="pay-cc-fees-option"'.($pay_cc_fees?' checked="checked"':'').' value="1"><label for="pay-cc-fees-option">Pay the '.$cc_fees_amount.'% ($'.$cc_fees_total.') credit card processing fee.</label></p>';
-		}
-
-		$form = $recurring_code.$cc_code;
-		$form .= '<p>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</p>';
-		if($cc_fees_option==2 && is_numeric($cc_fees_amount)) {
-			$form .= '<p>Your donation will include a '.$cc_fees_amount.'% ($'.$cc_fees_total.') credit card processing fee.</p>';
-		}
-		return $form;
+		return $contents;
 	}
 
 
@@ -186,73 +99,15 @@ HEREDOC;
 			if($order->user_id) $return_url .= '&uid='.$order->user_id;
 			$return_url = JRoute::_($return_url,true,$ssl);
 			$payment_info = json_decode($order->payment->infohash,true);
-			$order->special_instr = htmlentities(substr($order->special_instr,0,500));
 
-			$cart_array = array('Designation^Amount');
-			if(is_object($order->cart) && is_array($order->cart->items)):
-				foreach($order->cart->items as $item):
-					$cart_array[] = str_replace(array("&",'^','|'),array("and",'',''),$item->name).'^$'.number_format($item->qty*$item->price,2);
-				endforeach;
-			endif;
-			$cart_code = '<input type="hidden" name="gridLineItem" value="'.implode('|',$cart_array).'" />';
-
-			$address_code = '<input type="hidden" name="Email" value="'.$order->email.'" />';
-			if($order->billing_address_id && is_object($order->billing_address)) {
-				$addressparts = array();
-				if($order->billing_adddress->address1) $addressparts[] = $order->billing_address->address1;
-				if($order->billing_adddress->address2) $addressparts[] = $order->billing_address->address2;
-				if($order->billing_address->first_name) $address_code .= '<input type="hidden" name="FirstName" value="'.str_replace('"','\"',$order->billing_address->first_name).'" />';
-				if($order->billing_address->last_name) $address_code .= '<input type="hidden" name="LastName" value="'.str_replace('"','\"',$order->billing_address->last_name).'" />';
-				if(!empty($addressparts)) $address_code .= '<input type="hidden" name="Address1" value="'.str_replace('"','\"',implode(', ',$addressparts)).'" />';
-				if($order->billing_address->city) $address_code .= '<input type="hidden" name="City" value="'.str_replace('"','\"',$order->billing_address->city).'" />';
-				if($order->billing_address->state) $address_code .= '<input type="hidden" name="St" value="'.str_replace('"','\"',$order->billing_address->state).'" />';
-				if($order->billing_address->zip) $address_code .= '<input type="hidden" name="Zip" value="'.str_replace('"','\"',$order->billing_address->zip).'" />';
-				if($order->billing_address->country) $address_code .= '<input type="hidden" name="Country" value="'.str_replace('"','\"',$order->billing_address->country).'" />';
-			} else {
-				$address_code .= '<input type="hidden" name="FirstName" value="" />';
-				$address_code .= '<input type="hidden" name="lastName" value="" />';
+			$path = JPluginHelper::getLayoutPath('donorcart', 'donatelinq', 'submitform');
+			$contents = '';
+			if(file_exists($path)) {
+				ob_start();
+				include $path;
+				$contents = ob_get_clean();
 			}
-
-			if($order->shipping_address_id && is_object($order->shipping_address)) {
-				if($order->shipping_address->first_name) $address_code .= '<input type="hidden" name="mail_first_name" value="'.str_replace('"','\"',$order->shipping_address->first_name).'" />';
-				if($order->shipping_address->last_name) $address_code .= '<input type="hidden" name="mail_last_name" value="'.str_replace('"','\"',$order->shipping_address->last_name).'" />';
-				if($order->shipping_address->address1) $address_code .= '<input type="hidden" name="mail_address" value="'.str_replace('"','\"',$order->shipping_address->address1).'" />';
-				if($order->shipping_address->address2) $address_code .= '<input type="hidden" name="mail_address_two" value="'.str_replace('"','\"',$order->shipping_address->address2).'" />';
-				if($order->shipping_address->city) $address_code .= '<input type="hidden" name="mail_city" value="'.str_replace('"','\"',$order->shipping_address->city).'" />';
-				if($order->shipping_address->state) $address_code .= '<input type="hidden" name="mail_state" value="'.str_replace('"','\"',$order->shipping_address->state).'" />';
-				if($order->shipping_address->zip) $address_code .= '<input type="hidden" name="mail_zip" value="'.str_replace('"','\"',$order->shipping_address->zip).'" />';
-				if($order->shipping_address->country) $address_code .= '<input type="hidden" name="mail_country" value="'.str_replace('"','\"',$order->shipping_address->country).'" />';
-			}
-
-			$recurring_frequency = isset($payment_info['selFrequency'])?$payment_info['selFrequency']:'One Time';
-			$recurring_code = '<input type="hidden" name="selFrequency" value="'.$recurring_frequency.'" />';
-			if($recurring_frequency != 'One Time') {
-				$recurring_code .= '<input type="hidden" name="donationStartDate" value="'.date('m/d/Y').'" />';
-			}
-
-			$form = <<<HEREDOC
-<form name="cartform" method="post" id="dcart-donatelinq-redirectform" enctype="application/x-www-form-urlencoded" action="{$this->params->get('donatelink')}">
-	<input name="returnURL" value="$return_url" type="hidden" />
-	<input name="merchantid" value="{$this->params->get('merchant_id')}" type="hidden" />
-	<input name="pageid" value="{$this->params->get('page_id')}" type="hidden" />
-	<input name="Amount" value="$order->order_total" type="hidden" />
-	$cart_code
-	$address_code
-	$recurring_code
-	<input type="hidden" name="donationComments" value="{$order->special_instr}" />
-	<input type="hidden" name="custom_7" value="{$order->special_instr}" />
-	<p>You are being redirected to our secure processing server.<br />
-		If you are not redirected within 5 seconds <input type="submit" id="dcart-donatelinq-submitformbutton" value="Click here" /></p>
-	<script type="text/javascript">
-		var redirectform=document.getElementById("dcart-donatelinq-redirectform");
-		var submitted=false;
-		redirectform.onSubmit=function(){if(submitted)return false;submitted=true;return true};
-		window.setTimeout(function(){redirectform.submit()},3000)
-	</script>
-</form>
-HEREDOC;
-
-			return $form;
+			return $contents;
 		endif;
 	}
 
@@ -268,40 +123,14 @@ HEREDOC;
 	 */
 	public function onDisplayPaymentInfo($order, $params, $payment_name) {
 		if($payment_name != $this->getName()) return;
-		if(is_object($order->payment)) {
-			$payment_info = json_decode($order->payment->infohash,true);
-			if(empty($payment_info)) return;
-			$html = '<p><strong>Payment Amount</strong>: '.$order->order_total.'</p>';
-			if($payment_info['pay_cc_fees'] && $this->params->get('cc_fees_option',1)==1) {
-				$html .= '<p><strong>Pay CC Fees?</strong>: '.($payment_info['pay_cc_fees']?'Yes':'No').'</p>';
-			}
-
-			//only display the payment frequency if it makes sense (if there is more than one option available and one has been sselected)
-			$allow_recurring_donations = $params->get('allow_recurring_donations',0);
-			if($allow_recurring_donations != 0 && isset($payement_info['selFrequency'])) {
-				$recurring_options = ($allow_recurring_donations==1)?1:0;
-				$recurring_options += count($this->_get_recurring_options());
-				if($recurring_options > 1) {
-					$html .= '<p><strong>Payment Frequency</strong>:'.$payment_info['selFrequency'].'</p>';
-				}
-			}
-
-			if(isset($payment_info['paytype'])) {
-				if($payment_info['paytype']=='EFT') {
-					$html .= '<p><strong>Payment Type</strong>: EFT</p>';
-					if(!empty($payment_info['name_on_account'])) $html .= '<p><strong>Name on Account</strong>: '.$payment_info['name_on_account'].'</p>';
-					if(!empty($payment_info['lastfour'])) $html .= '<p><strong>Last 4 Digits of Account</strong>: '.$payment_info['lastfour'].'</p>';
-				} elseif($payment_info['paytype']=='CC') {
-					$html .= '<p><strong>Payment Type</strong>: Credit/Debit</p>';
-					if(!empty($payment_info['name_on_account'])) $html .= '<p><strong>Name on Account</strong>: '.$payment_info['name_on_account'].'</p>';
-					if(!empty($payment_info['lastfour'])) $html .= '<p><strong>Last 4 Digits of Account</strong>: '.$payment_info['lastfour'].'</p>';
-				}
-			}
-			if(isset($payment_info['Email']) && !empty($payment_info['Email'])) $html .= '<p><strong>Email</strong>: '.$payment_info['Email'].'</p>';
-			if(isset($payment_info['Special_Instructions']) && !empty($payment_info['Special_Instructions'])) $html .= '<p><strong>Special Instructions</strong>: '.$payment_info['Special_Instructions'].'</p>';
-
-			return $html;
+		$path = JPluginHelper::getLayoutPath('donorcart', 'donatelinq', 'paymentinfo');
+		$contents = '';
+		if(file_exists($path)) {
+			ob_start();
+			include $path;
+			$contents = ob_get_clean();
 		}
+		return $contents;
 	}
 
 
@@ -457,10 +286,11 @@ HEREDOC;
 		} */
 
 
-		//now we will save the billing address if the user is logged in and has not already saved their billing address
-		if($user_id) {
+		//now we will save the billing address if appropriate
+		if($user_id && $order->billing_address_id) {
 			$addressmodel = FOFModel::getTmpInstance('addresses','DonorcartModel');
 			$addressdata = array_filter(array(
+				'donorcart_address_id' => $order->billing_address_id,
 				'user_id' => $user_id,
 				'first_name' => JRequest::getString('FirstName',''),
 				'last_name' => JRequest::getString('LastName',''),
@@ -477,8 +307,6 @@ HEREDOC;
 					$addressdata = array_merge((array)$order->billing_address, $addressdata);
 					$addressmodel->save($addressdata);
 				}
-			} elseif($addressmodel->save($addressdata)) {
-				$orderdata['billing_address_id'] = $addressmodel->getId();
 			}
 		}
 

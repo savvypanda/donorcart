@@ -122,18 +122,18 @@ span.dcart-subtotal {
 /******************* Checkout styles *******************/
 #donorcart_checkout_container fieldset {
 	display: block;
-	border: 0px solid #A1926E;
-	margin-top: 15px;
+	border: 1px solid #EEE;
+	margin:10px 0 0 15px;
 	padding: 15px;
 }
 #donorcart_checkout_container legend {
 	margin: 0;
 	padding: 0 10px;
 	font-weight: bold;
-	font-size: 14px;
+	font-size: 1.2em;
+	line-height: 1.2em;
 	display: block;
-	-webkit-padding-start: 2px;
-	-webkit-padding-end: 2px;
+	width: auto;
 	border: none;
 }
 #donorcart_checkout_container label {
@@ -143,9 +143,12 @@ span.dcart-subtotal {
 	width: 120px;
 	font-weight: bold;
 }
-#donorcart_checkout_container .optiondrawer{
+#donorcart_checkout_container .optiondrawer {
 	padding-left: 50px;
 	display:none;
+}
+#donorcart_checkout_form input[type=submit] {
+	float:right;
 }
 
 #donorcart_checkout_container{display:block;position:relative;zoom:1;z-index:44;}

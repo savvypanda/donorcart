@@ -160,7 +160,7 @@ class DonorcartModelOrders extends FOFModel {
 			if(!($user = JFactory::getUser($user_id))) return false;
 			$email = $user->email;
 		}
-		$order_update_array = array('donorcart_order_id',$order->donorcart_order_id);
+		$order_update_array = array('donorcart_order_id'=>$order->donorcart_order_id);
 		if(!empty($user_id)) $order_update_array['user_id'] = $user_id;
 		if(!empty($email)) $order_update_array['email'] = $email;
 		if(!empty($status)) $order_update_array['status'] = $status;
@@ -216,7 +216,7 @@ class DonorcartModelOrders extends FOFModel {
 		}
 
 
-		$order_update_array = array('donorcart_order_id'=>$order_id,'user_id'=>null);
+		$order_update_array = array('donorcart_order_id'=>$order->donorcart_order_id,'user_id'=>null);
 		if($remove_email) $order_update_array['email'] = '';
 		if(!empty($status)) $order_update_array['status'] = $status;
 

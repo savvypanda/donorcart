@@ -91,6 +91,8 @@
 !plugins/donorcart/authorizenet/anet_php_sdk/lib/ssl/*
 !plugins/donorcart/donatelinq/
 !plugins/donorcart/donatelinq/*
+!plugins/donorcart/donatelinq/tmpl/
+!plugins/donorcart/donatelinq/tmpl/*
 !plugins/donorcart/free/
 !plugins/donorcart/free/*
 !plugins/donorcart/sagepay/

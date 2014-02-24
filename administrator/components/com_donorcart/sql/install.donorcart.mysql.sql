@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_orders` (
 	`user_id` INT(11),
 	`email` VARCHAR(80),
 	`status` VARCHAR(50) NOT NULL DEFAULT 'cart',
+	`completed_on` DATETIME DEFAULT NULL,
 	`cart_id` BIGINT(20) UNSIGNED,
 	`shipping_address_id` BIGINT(20) UNSIGNED,
 	`billing_address_id` BIGINT(20) UNSIGNED,

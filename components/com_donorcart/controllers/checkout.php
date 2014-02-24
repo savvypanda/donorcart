@@ -138,7 +138,7 @@ class DonorcartControllerCheckout extends FOFController {
 	}
 
 	public function _logout() {
-		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
+		//JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');
 		$session = JFactory::getSession();
 		$cartid = $session->get('cart_id',null);
 		$orderid = $session->set('order_id',null);
@@ -620,6 +620,18 @@ class DonorcartControllerCheckout extends FOFController {
 	private function _completeOrder() {
 		$ordermodel =& $this->getThisModel();
 		$order = $ordermodel->getItem();
+		if(!$order || !is_object($order) || !$order->status=='complete') return false;
+		$updatefields = array();
+		if(!$order->viewtoken) $updatefields['viewtoken'] = $order->viewtoken = is_callable(array('JApplication', 'getHash'))?JApplication::getHash($order->donorcart_order_id.JSession::getFormToken()):md5(JFactory::getApplication()->get('secret').$order->donorcart_order_id.JSession::getFormToken());
+		if(!$order->completed_on) $updatefields['completed_on'] = $order->completed_on = date('Y-m-d H:i:s');
+		if(!empty($updatefields)) {
+			$db = JFactory::getDbo();
+			$update_statements = array();
+			foreach($updatefields as $field => $value) $update_statements[] = $field.'='.$db->quote($value);
+			$query = 'UPDATE #__donorcart_orders SET '.implode(', ',$update_statements).' WHERE donorcart_order_id='.$db->quote($order->donorcart_order_id);
+			$db->setQuery($query);
+			$db->query();
+		}
 
 		JPluginHelper::importPlugin('donorcart');
 		$dispatcher = JDispatcher::getInstance();

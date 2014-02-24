@@ -5,15 +5,33 @@ $billto_option_flag = $this->params->get('billto_option');
 $recurring_flag = $this->params->get('allow_recurring_donations',0);
 ?>
 <div id="donorcart_checkout_container">
-	<?php if(!$this->user->id && $this->params->get('require_email_for_guest_checkout',false)): ?>
-		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_GUEST_EMAIL')?></h3>
-		<div><?=$this->item->email?></div>
+	<h2><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_REVIEW')?></h2>
+	<?php if($this->item->cart_id && $this->item->cart && is_object($this->item->cart) && $this->item->cart->items && is_array($this->item->cart->items) && !empty($this->item->cart->items)): ?>
+		<h3>Order Items:</h3>
+		<table>
+			<thead><tr>
+					<th>Qty</th>
+					<th>Name</th>
+					<th>Price</th>
+					<th>Subtotal</th>
+				</tr></thead>
+			<tbody><?php foreach($this->item->cart->items as $item): ?><tr>
+					<td><?=$item->qty?></td>
+					<td><?=(($item->url)?'<a href="'.$item->url.'">'.$item->name.'</a>':$item->name)?></td>
+					<td>$<?=number_format($item->price,2)?></td>
+					<td>$<?=number_format($item->qty*$item->price,2)?></td>
+					</tr><?php endforeach; ?></tbody>
+		</table>
 	<?php endif; ?>
+	<p><strong>SubTotal</strong>: $<?=number_format($this->item->cart->subtotal,2)?><br /><strong>Order Total</strong>: $<?=number_format($this->item->order_total,2)?></p>
 	<?php if($recurring_flag==1) { ?>
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_RECURRING')?></h3>
 		<div><?=JText::_($this->item->cart->recurring?'COM_DONORCART_CHECKOUT_RECURRING_YES':'COM_DONORCART_CHECKOUT_RECURRING_NO')?></div>
 	<?php } ?>
-	<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADER_REVIEW')?></h3>
+	<?php if(!$this->user->id && $this->params->get('require_email_for_guest_checkout',false)): ?>
+		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_GUEST_EMAIL')?></h3>
+		<div><?=$this->item->email?></div>
+	<?php endif; ?>
 	<div id="donorcart_review">
 		<?php if($shipto_option_flag != 0): ?>
 			<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SHIPPING_ADDRESS')?></h3>
@@ -81,17 +99,20 @@ $recurring_flag = $this->params->get('allow_recurring_donations',0);
 			<?php endif; ?>
 		<?php endif; ?>
 
-		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_PAYMENT_INFO')?></h3>
 		<?php
+		$paymentinfo = '';
 		JPluginHelper::importPlugin('donorcart');
 		$dispatcher = JDispatcher::getInstance();
 		$results = $dispatcher->trigger('onDisplayPaymentInfo', array($this->item, $this->params, $this->item->payment_name));
 		foreach($results as $result):
-			if(is_string($result)) echo $result;
+			if(is_string($result)) {
+				$paymentinfo .= $result;
+			}
 		endforeach;
+		if(!empty($paymentinfo)):
+			echo '<h3>'.JText::_('COM_DONORCART_CHECKOUT_HEADING_PAYMENT_INFO').'</h3>'.$paymentinfo;
+		endif;
 		?>
-		<br />
-		<br />
 
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_SPECIAL_INSTR')?></h3>
 		<div><?=($this->item->special_instr?$this->item->special_instr:JText::_('COM_DONORCART_CHECKOUT_NO_SPECIAL_INSTR'))?></div>

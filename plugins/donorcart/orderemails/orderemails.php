@@ -7,7 +7,7 @@ class plgDonorcartOrderemails extends JPlugin {
 		$admin_emails = $this->params->get('admin_emails','');
 		$admin_email_subject =  $this->params->get('admin_email_subject','');
 		$admin_email_ishtml = $this->params->get('admin_email_ishtml',false);
-		if($send_admin_email && $admin_emails && $admin_email_template) {
+		if($send_admin_email && $admin_emails) {
 			$admin_email_text = $this->_prepare_email_template('adminemail', $order, $admin_email_ishtml);
 			$this->_send_mail($admin_emails, $admin_email_subject, $admin_email_text, $admin_email_ishtml);
 		}
@@ -15,7 +15,7 @@ class plgDonorcartOrderemails extends JPlugin {
 		$send_user_email = $this->params->get('send_confirmation_email_to_user','');
 		$user_email_subject =  $this->params->get('user_email_subject','');
 		$user_email_ishtml = $this->params->get('user_email_ishtml',false);
-		if($send_user_email && $user_email_template && $order->email) {
+		if($send_user_email && $order->email) {
 			$user_email_text = $this->_prepare_email_template('useremail', $order, false);
 			$this->_send_mail($order->email, $user_email_subject, $user_email_text, $user_email_ishtml);
 		}
@@ -23,6 +23,12 @@ class plgDonorcartOrderemails extends JPlugin {
 
 	private function _prepare_email_template($template, $order, $is_html) {
 		$contents = '';
+		$order_link = false;
+		$params = JComponentHelper::getParams('com_donorcart');
+		if($order->viewtoken) {
+			$order_link = JRoute::_('index.php?option=com_donorcart&view=order&id='.$order->donorcart_order_id.'&viewtoken='.$order->viewtoken, false, ($params->get('use_ssl',0)==0)?-1:1);
+		}
+
 		$path = JPluginHelper::getLayoutPath('donorcart', 'orderemails', $template);
 		if(file_exists($path)) {
 			ob_start();
@@ -35,10 +41,10 @@ class plgDonorcartOrderemails extends JPlugin {
 	private function _send_mail($addresses, $subject, $text, $is_html) {
 		$mailer = JFactory::getMailer();
 
-		//set the sender information
-		$config = JFactory::getConfig();
-		$sender = array($config->getValue('config.mailfrom'),$config->getValue('config.fromname'));
-		$mailer->setSender($sender);
+		//set the sender information (not necessary, since these are the defaults anyways)
+		//$config = JFactory::getConfig();
+		//$sender = array($config->get('config.mailfrom'),$config->get('config.fromname'));
+		//$mailer->setSender($sender);
 
 		//set the recipients
 		$numaddresses = 0;

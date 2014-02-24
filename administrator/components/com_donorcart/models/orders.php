@@ -60,18 +60,18 @@ class DonorcartModelOrders extends FOFModel {
 			$query->where('o.email LIKE '.$this->_db->quote('%'.$emailfilter.'%'));
 		}
 		if($startdate = $this->getState('startdate')) {
-			$query->where('o.created_on >= '.$this->_db->quote($startdate));
+			$query->where('COALESCE(o.completed_on, o.created_on) >= '.$this->_db->quote($startdate));
 		}
 		if($enddate = $this->getState('enddate')) {
-			$query->where('o.created_on <= '.$this->_db->quote($enddate));
+			$query->where('COALESCE(o.completed_on, o.created_on) <= '.$this->_db->quote($enddate));
 		}
 
 		if (!$overrideLimits) {
-			$order = $this->getState('filter_order', null, 'cmd');
+			$order = $this->getState('filter_order', 'id', 'cmd');
 			if (!in_array($order, array_keys($this->getTable()->getData()))) {
 				$order = 'donorcart_order_id';
 			}
-			$dir = $this->getState('filter_order_Dir', 'ASC', 'cmd');
+			$dir = $this->getState('filter_order_Dir', 'DESC', 'cmd');
 			$query->order($this->_db->qn($order).' '.$dir);
 		}
 

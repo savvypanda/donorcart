@@ -1,4 +1,7 @@
-ALTER TABLE `#__donorcart_orders` DROP COLUMN `recurring`;
+ALTER TABLE `#__donorcart_orders`
+	DROP COLUMN `recurring`,
+	ADD COLUMN `completed_on` DATETIME DEFAULT NULL
+;
 
 ALTER TABLE `#__donorcart_carts` ADD COLUMN `recurring` TINYINT(1) NOT NULL DEFAULT 0;
 

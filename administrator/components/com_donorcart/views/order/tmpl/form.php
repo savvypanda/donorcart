@@ -27,6 +27,7 @@ $editor = JFactory::getEditor();
 		<legend><?= JText::_('COM_DONORCART_ORDER_LEGEND_DETAILS') ?></legend>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ID_LABEL') ?></strong>: <?php echo $this->item->donorcart_order_id; ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_STATUS_LABEL') ?></strong>: <?php echo $this->item->status; ?></p>
+		<?php if($this->item->completed_on): ?><p><strong><?=JText::_('COM_DONORCART_ORDER_COMPLETED_ON_LABEL') ?></strong>: <?php echo $this->item->completed_on; ?></p><?php endif; ?>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_TOTAL_LABEL') ?></strong>: <?php echo $this->item->order_total; ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_RECURRING_LABEL') ?></strong>: <?php if($this->item->cart_id && is_object($this->item->cart)) echo JText::_(($this->item->cart->recurring)?'COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING':'COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'); ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_SPECIAL_INSTRUCTIONS_LABEL') ?></strong>: <?php echo $this->item->special_instr; ?></p>

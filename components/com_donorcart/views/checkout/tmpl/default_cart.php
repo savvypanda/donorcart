@@ -15,9 +15,9 @@ $locked = in_array($this->item->status,array('submitted','complete'));
 		<tr>
 			<td colspan='3'>
 				<span id='dcart-subtotal'><?=JText::_('COM_DONORCART_SUBTOTAL')?>:<strong> $<?=number_format($this->item->cart->subtotal, 2)?></strong></span>
-				<div class="dcart-cartbuttons">
+				<!--div class="dcart-cartbuttons">
 					<a class="btn btn-warning<?=($locked?' order-locked':'')?>" href="<?php echo JRoute::_('index.php?option=com_donorcart&task=emptyCart&'.JSession::getFormToken().'=1'); ?>"><?=JText::_('COM_DONORCART_EMPTY_CART')?></a>
-				</div>
+				</div-->
 			</td>
 		</tr>
 	</tfoot>

@@ -1,5 +1,5 @@
 <?php defined('_JEXEC') or die("Restricted Access"); ?>
-<form action="<?php echo JRoute::_('index.php?option=com_donorcart'); ?>" method="post">
+<form action="<?php echo JRoute::_('index.php?option=com_donorcart&task=register'); ?>" method="post">
 	<fieldset>
 		<legend><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_ACCT_INFO')?></legend>
 		<p><?=JText::_('COM_DONORCART_CHECKOUT_REQUIRED_INFO_TEXT')?></p>
@@ -24,9 +24,8 @@
 			<label id="pw2msg" for="password2"><?php echo JText::_('COM_DONORCART_CHECKOUT_REGISTER_CONFIRM_PASSWORD'); ?>: *</label>
 			<input type="password" id="password2" name="password2" value="" class="" />
 		</div>
+		<input type="submit" value="<?=JText::_('COM_DONORCART_CHECKOUT_REGISTER_ACCOUNT_ACTION')?>" />
 	</fieldset>
-	<input type="submit" value="<?=JText::_('COM_DONORCART_CHECKOUT_REGISTER_ACCOUNT_ACTION')?>" />
-	<input type="hidden" name="task" value="register" />
 	<input type="hidden" name="id" value="0" />
 	<input type="hidden" name="gid" value="0" />
 	<?php echo JHTML::_('form.token'); ?>

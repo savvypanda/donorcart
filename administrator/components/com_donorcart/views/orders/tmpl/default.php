@@ -1,4 +1,6 @@
-<?php defined('_JEXEC') or die('Restricted access'); ?>
+<?php defined('_JEXEC') or die('Restricted access');
+JHtml::_('behavior.framework');
+?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
 	<table class="adminlist table table-striped">
@@ -51,7 +53,7 @@
 					<tr class="row<?=$m ?>">
 						<td align="center"><?=JHtml::_('grid.id',$i,$item->donorcart_order_id);?></td>
 						<td><?=$item->user_id?></td>
-						<td><?=$item->created_on?></td>
+						<td><?=$item->completed_on?$item->completed_on:$item->created_on?></td>
 						<td><?=$item->status?></td>
 						<td><?=(($item->cart_id && is_object($item->cart))?($item->cart->recurring?'Recurring':'One Time'):'')?></td>
 						<td><?=$item->order_total?></td>
