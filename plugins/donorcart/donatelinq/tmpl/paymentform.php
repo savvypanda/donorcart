@@ -23,11 +23,14 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 		<input type="hidden" name="selFrequency" value="<?=key($recurring_options)?>">
 	<?php } else {
 		//we have more than one option, which may be accomplished by a simple select list ?>
-		<p><label for="selFrequency">Recurring Frequency: </label><select name="selFrequency" id="selFrequency">
-			<?php foreach($recurring_options as $value => $text) { ?>
-				<option value="<?=$value?>"<?=(($value==$selected_frequency)?' selected="selected"':'')?>><?=$text?></option>
-			<?php } ?>
-		</select></p>
+		<div class="field select">
+			<label for="selFrequency">Recurring Frequency: </label>
+			<select name="selFrequency" id="selFrequency">
+				<?php foreach($recurring_options as $value => $text) { ?>
+					<option value="<?=$value?>"<?=(($value==$selected_frequency)?' selected="selected"':'')?>><?=$text?></option>
+				<?php } ?>
+			</select>
+		</div>
 	<?php }
 } else {
 	//the user may select between one-time and recurring donations
@@ -55,11 +58,15 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 	} else {
 		//The user has the option between a one-time donation or multiple recurring donation options
 		?>
-		<input type="hidden" name="selFrequency" value="One Time"><p id="dcart-donatelinq-frequencyouter"><label for="dcart-donatelinq-frequencyselector">Recurring Frequency: </label><select id="dcart-donatelinq-frequencyselector">
-			<?php foreach($recurring_options as $value => $text) { ?>
-				<option value="<?=$value?>"<?=(($value==$selected_frequency)?' selected="selected"':'')?>><?=$text?></option>
-			<?php } ?>
-		</select></p>
+		<input type="hidden" name="selFrequency" value="One Time">
+		<div class="field select" id="dcart-donatelinq-frequencyouter">
+			<label for="dcart-donatelinq-frequencyselector">Recurring Frequency: </label>
+			<select id="dcart-donatelinq-frequencyselector">
+				<?php foreach($recurring_options as $value => $text) { ?>
+					<option value="<?=$value?>"<?=(($value==$selected_frequency)?' selected="selected"':'')?>><?=$text?></option>
+				<?php } ?>
+			</select>
+		</div>
 		<script type="text/javascript">
 			(function($){
 				var recurring_option = $('#donorcart_checkout_form input[name=recurring]');
@@ -87,10 +94,10 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 //now let's display the "Pay CC Fees" option
 if($cc_fees_option==1 && $cc_fees_amount > 0) {
 	$pay_cc_fees = array_key_exists('pay_cc_fees',$payment_info)?$payment_info['pay_cc_fees']:false; ?>
-	<p><input type="checkbox" name="pay_cc_fees" id="pay-cc-fees-option"<?=($pay_cc_fees?' checked="checked"':'')?> value="1"><label for="pay-cc-fees-option">Pay the <?=$cc_fees_amount?>% ($<?=number_format($cc_fees_total,2)?>) credit card processing fee.</label></p>
+	<div class="field checkbox"><input type="checkbox" name="pay_cc_fees" id="pay-cc-fees-option"<?=($pay_cc_fees?' checked="checked"':'')?> value="1"><label for="pay-cc-fees-option">Pay the <?=$cc_fees_amount?>% ($<?=number_format($cc_fees_total,2)?>) credit card processing fee.</label></div>
 <?php }
 ?>
-<p>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</p>
+<p><small><em>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</em></small></p>
 <?php if($cc_fees_option==2 && is_numeric($cc_fees_amount)) { ?>
-	<p>Your donation will include a <?=$cc_fees_amount?>% ($<?=number_format($cc_fees_total,2)?>) credit card processing fee.</p>
+	<p><small><em>Your donation will include a <?=$cc_fees_amount?>% ($<?=number_format($cc_fees_total,2)?>) credit card processing fee.</em></small></p>
 <?php }

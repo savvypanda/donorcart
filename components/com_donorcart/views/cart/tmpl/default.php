@@ -1,4 +1,5 @@
 <?php defined('_JEXEC') or die("Restricted Access");
+$params = JComponentHelper::getParams('com_donorcart');
 $total = (isset($this->item->items) && is_array($this->item->items))?count($this->item->items):0;
 $locked = false;
 $ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
@@ -23,7 +24,7 @@ if($ordermodel->getId()) {
 				<?php if($total > 0): ?>
 					<div class="dcart-cartbuttons">
 						<a class="btn btn-warning dcart-link<?=($locked?' order-locked':'')?>" href="<?php echo JRoute::_('index.php?option=com_donorcart&view=cart&task=empty&format=raw&'.JSession::getFormToken().'=1'); ?>"><?=JText::_('COM_DONORCART_EMPTY_CART')?></a>
-						<a class="btn btn-success" href="<?=JRoute::_('index.php?option=com_donorcart&view=checkout')?>"><?=JText::_('COM_DONORCART_CHECKOUT_BUTTON_TEXT')?></a>
+						<a class="btn btn-success" href="<?=JRoute::_('index.php?option=com_donorcart&view=checkout',false,$params->get('ssl_mode')==2?1:null)?>"><?=JText::_('COM_DONORCART_CHECKOUT_BUTTON_TEXT')?></a>
 					</div>
 				<?php endif; ?>
 			</td>

@@ -18,12 +18,14 @@ if($uiversion = $params->get('jqueryui_version')) {
 		JFactory::getDocument()->addStyleSheet('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/themes/'.$uitheme.'/jquery-ui.min.css');
 	}
 }
+$juri = JUri::getInstance();
+$custom_js = 'var sp_website_root="'.JUri::root().'",sp_checkout_page="'.JRoute::_('index.php?option=com_donorcart',false,$params->get('ssl_mode')==2?1:null).'";';
+JFactory::getDocument()->addScriptDeclaration($custom_js);
 
 FOFTemplateUtils::addJS('media://com_donorcart/donorcart.js');
 FOFTemplateUtils::addCSS('media://com_donorcart/donorcart.css');
 ?>
 
 <div id="dcart_target">
-	<!--img src="media/com_donorcart/images/ajax_loading.gif" alt="Loading.." height="16" width="16" align="left" border="0" />&nbsp;&nbsp;Cart Loading...-->
 	<?php include(dirname(__FILE__).DIRECTORY_SEPARATOR.'default.php'); ?>
 </div>

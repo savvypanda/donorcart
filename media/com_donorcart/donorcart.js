@@ -15,7 +15,7 @@
 		if(typeof checkout_alert==='undefined')checkout_alert=false;
 
 		//Replace the cart with a loading message
-		$(dcart_target).html('<img src="media/com_donorcart/images/ajax_loading.gif" alt="'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...')+'" height="16" width="16" align="left" border="0" /> &nbsp; &nbsp; '+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...'));
+		$(dcart_target).html('<img src="'+sp_website_root+'media/com_donorcart/images/ajax_loading.gif" alt="'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...')+'" height="16" width="16" align="left" border="0" /> &nbsp; &nbsp; '+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...'));
 
 		if(postdata != false) {
 			//if we have anything to post, use a post request
@@ -26,12 +26,12 @@
 				if(checkout_alert != false) {
 					if(checkout_alert === 'skip') {
 						//we are supposed to skip straight to checkout
-						window.location='index.php?option=com_donorcart';
+						window.location=sp_checkout_page;
 					} else {
 						//ask the user if they would like to proceed to checkout
 						var dialogbuttons = {};
 						dialogbuttons[Joomla.JText._('COM_DONORCART_JS_PROCEED_TO_CHECKOUT','Check Out')] = function() {
-							window.location='index.php?option=com_donorcart';
+							window.location=sp_checkout_page;
 							$(this).dialog("close");
 						};
 						dialogbuttons[Joomla.JText._('COM_DONORCART_JS_CONTINUE_SHOPPING','Add Another Donation')] = function() {
@@ -64,34 +64,21 @@
 
 
 	$(document).ready(function() {
-		$('#donorcart_login_div').hide().prop('checked',false);
-		$('#donorcart_no_account_div').hide().prop('checked',false);
-		$('#donorcart_create_acct_div').hide().prop('checked',false);
+		var account_options = $('#donorcart_checkout_container input[type=radio][name=account_option]');
+		if(account_options.length) {
+			function update_account_selection() {
+				account_options.each(function(){
+					$('#'+$(this).attr('data-target'))[$(this).is(':checked')?'slideDown':'slideUp']("medium");
+				})
+			}
 
-		windowhash = window.location.hash;
-		if(windowhash == '#createacct') {
-			$('#donorcart_create_acct_div').show().prop('checked',true);
-		} else if(windowhash == '#login') {
-			$('#donorcart_login_div').show().prop('checked',true);
-		} else if(windowhash == '#noacct') {
-			$('#donorcart_no_account_div').show().prop('checked',true);
+			var windowhash = window.location.hash;
+			account_options.each(function(){
+				if(windowhash=='#'+$(this).val()) $(this).prop('checked',true);
+			});
+			update_account_selection();
+			account_options.click(update_account_selection);
 		}
-
-		$('#donorcart_create_acct_option').click(function() {
-			$('#donorcart_login_div').slideUp("medium");
-			$('#donorcart_no_account_div').slideUp("medium");
-			$('#donorcart_create_acct_div').slideDown("medium");
-		});
-		$('#donorcart_no_login_option').click(function() {
-			$('#donorcart_login_div').slideUp("medium");
-			$('#donorcart_create_acct_div').slideUp("medium");
-			$('#donorcart_no_account_div').slideDown("medium");
-		});
-		$('#donorcart_login_option').click(function() {
-			$('#donorcart_no_account_div').slideUp("medium");
-			$('#donorcart_create_acct_div').slideUp("medium");
-			$('#donorcart_login_div').slideDown("medium");
-		});
 
 		function togglesameshipbill() {
 			if($(this).is(':checked')) {
@@ -103,8 +90,8 @@
 		$('input[name=use_same_address_for_billto]').change(togglesameshipbill).each(togglesameshipbill);
 
 		function togglenewaddress() {
-			$(this).parent().find('.optiondrawer').slideDown();
-			$('[name='+this.name+']').not(':checked').parent().find('.optiondrawer').slideUp();
+			$(this).parents('.addressoption').find('.optiondrawer').slideDown();
+			$('[name='+this.name+']').not(':checked').parents('.addressoption').find('.optiondrawer').slideUp();
 		}
 		$('input[type=radio][name=shipto_id],input[type=radio][name=billto_id]').change(togglenewaddress).not(':checked').parent().find('.optiondrawer').slideUp();
 
@@ -118,7 +105,7 @@
 			var original_link = e.target;
 			var dialogbuttons = {};
 			dialogbuttons[Joomla.JText._('COM_DONORCART_JS_UNLOCK_ORDER','Unlock Order')] = function() {
-				$.get('index.php?option=com_donorcart&task=resetOrder&format=raw',function(data){
+				$.get(sp_website_root+'index.php?option=com_donorcart&task=resetOrder&format=raw',function(data){
 					if(data=='success') {
 						$(original_link).removeClass('order-locked').click();
 					} else {

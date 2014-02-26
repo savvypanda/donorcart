@@ -2,18 +2,18 @@
 <form action="<?php echo JRoute::_('index.php?option=com_donorcart&task=login'); ?>" method="post">
 	<fieldset>
 		<legend><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_LOGIN_TO_CONTINUE')?></legend>
-		<div class="field">
-			<label for="username"><?php echo JText::_('COM_DONORCART_CHECKOUT_USERNAME') ?></label>
-			<input name="username" id="username" type="text" class="inputbox" alt="username" size="18" />
+		<div class="field text">
+			<label for="dcart-checkout-login-username"><?php echo JText::_('COM_DONORCART_CHECKOUT_USERNAME') ?></label>
+			<input name="username" id="dcart-checkout-login-username" type="text" />
 		</div>
-		<div class="field">
-			<label for="passwd"><?php echo JText::_('COM_DONORCART_CHECKOUT_PASSWORD') ?></label>
-			<input type="password" id="passwd" name="passwd" class="inputbox" size="18" alt="password" />
+		<div class="field text">
+			<label for="dcart-checkout-login-passwd"><?php echo JText::_('COM_DONORCART_CHECKOUT_PASSWORD') ?></label>
+			<input type="password" id="dcart-checkout-login-passwd" name="passwd" />
 		</div>
 		<?php if(JPluginHelper::isEnabled('system', 'remember')) : ?>
-			<div class="field">
-				<label for="remember"><?php echo JText::_('COM_DONORCART_CHECKOUT_REMEMBERME') ?></label>
-				<input type="checkbox" id="remember" name="remember" class="inputbox" value="yes" alt="<?=JText::_('COM_DONORCART_CHECKOUT_REMEMBERME')?>" />
+			<div class="field checkbox">
+				<input type="checkbox" id="dcart-checkout-login-remember" name="remember" value="yes" />
+				<label for="dcart-checkout-login-remember"><?php echo JText::_('COM_DONORCART_CHECKOUT_REMEMBERME') ?></label>
 			</div>
 		<?php endif; ?>
 		<input type="submit" name="Submit" class="button" value="<?php echo JText::_('COM_DONORCART_CHECKOUT_LOGIN') ?>" />
