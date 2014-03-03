@@ -4,30 +4,6 @@ require_once(JPATH_SITE.DIRECTORY_SEPARATOR.'administrator'.DIRECTORY_SEPARATOR.
 class plgDonorcartDonatelinq extends JPluginDonorcart {
 	protected $_name = 'donatelinq';
 
-	private $cc_fees_sku = 'DNLQ-PROCESSING-FEE';
-	private $cc_fees_name = 'Processing Fee';
-
-	/*
-	 * Displays the payment form (assuming the user selects this payment method)
-	 *
-	 * @param Object $order The donorcartModelOrders object containing the current order
-	 * @param Object $params The com_donorcart JParams object
-	 *
-	 * @return string The HTML for the payment form
-	 */
-	public function onDisplayPaymentForm($order, $params) {
-		if(!$this->isActive()) return;
-		$path = JPluginHelper::getLayoutPath('donorcart', 'donatelinq', 'paymentform');
-		$contents = '';
-		if(file_exists($path)) {
-			ob_start();
-			include $path;
-			$contents = ob_get_clean();
-		}
-		return $contents;
-	}
-
-
 	/*
 	 * Processes the submitted order and saves the submitted payment info.
 	 * This function is fired PRIOR to confirming the order - DO NOT submit the payment here
@@ -42,97 +18,15 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 	 */
 	public function onSubmitOrder($order, $params, $payment_name) {
 		if(!empty($payment_name) && $payment_name != $this->getName()) return;
-		$payment_name=$this->getName();
-		$cc_fees_option = $this->params->get('cc_fees_option');
-		if($cc_fees_option==0) {
-			$pay_cc_fees=0;
-		} elseif($cc_fees_option==2) {
-			$pay_cc_fees=1;
-		} else {
-			$pay_cc_fees = JRequest::getInt('pay_cc_fees',0);
-		}
-		$current_fee_item = false;
-		foreach($order->cart->items as $item_id => $item) {
-			if($item->sku==$this->cc_fees_sku && $item->name==$this->cc_fees_name) {
-				$current_fee_item = $item_id;
-			}
-		}
-		if($pay_cc_fees) {
-			$cc_fees_total = $this->_calc_cc_processing_fee($order);
-			if(!$current_fee_item) {
-				FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($this->cc_fees_sku, $this->cc_fees_name, $cc_fees_total, '1', '', '', false, true);
-			} elseif($order->cart->items[$current_fee_item]->price != $cc_fees_total) {
-				FOFModel::getAnInstance('carts','DonorcartModel')->updateItemInCart($current_fee_item, null, null, $cc_fees_total, '1', null, null, true);
-			}
-		} else {
-			if($current_fee_item) {
-				FOFModel::getAnInstance('carts','DonorcartModel')->removeItemFromCart($current_fee_item, true);
-			}
-		}
-		$recurring_frequency = JRequest::getString('selFrequency','One Time');
-		$infohash = array('selFrequency'=>$recurring_frequency, 'pay_cc_fees'=>$pay_cc_fees);
+		$pay_cc_fee = $this->_handle_processing_fee($order, $payment_name);
+
+		$recurring_frequency = JRequest::getString($this->getName().'_payment_frequency','One Time');
+		$infohash = array('selFrequency'=>$recurring_frequency, 'pay_cc_fee'=>$pay_cc_fee);
 		return array(
 			'payment_type' => $payment_name,
 			'infohash' => json_encode($infohash)
 		);
 	}
-
-	/*
-	 * Processes the submitted order - performing any necessary actions to submit the order to the payment gateway
-	 *
-	 * @param Object $order The donorcartModelOrders object containing the current order
-	 * @param Object $params The com_donorcart JParams object
-	 * @param boolean &$is_valid Whether or not the order has passed all validation
-	 *
-	 * @return null|boolean|string NULL if this payment plugin was not selected
-	 * 							   True if the payment was completed successfully
-	 * 						  	   The HTML to redirect the user to the payment gateway if more details must be collected (eg: credit card info, etc...)
-	 */
-	public function onConfirmOrder($order, $params, $is_valid) {
-		if($order->payment_name != $this->getName() || !is_object($order->payment) || !$is_valid) return;
-
-		if(!$order->order_total):
-			return 'No payment may be made for an empty order. Please add something to your cart and try checking out again.';
-		else:
-			$ssl = $params->get('ssl_mode')?1:-1;
-			$return_url = 'index.php?option=com_donorcart&task=postback&oid='.$order->donorcart_order_id;
-			if($order->user_id) $return_url .= '&uid='.$order->user_id;
-			$return_url = JRoute::_($return_url,true,$ssl);
-			$payment_info = json_decode($order->payment->infohash,true);
-
-			$path = JPluginHelper::getLayoutPath('donorcart', 'donatelinq', 'submitform');
-			$contents = '';
-			if(file_exists($path)) {
-				ob_start();
-				include $path;
-				$contents = ob_get_clean();
-			}
-			return $contents;
-		endif;
-	}
-
-
-	/*
-	 * Displays the payment information after it has been entered
-	 *
-	 * @param Object $order The donorcartModelOrders object containing the current order
-	 * @param Object $params The com_donorcart JParams object
-	 * @param string $payment_name The name of the payment plugin that was selected for this order
-	 *
-	 * @return string The HTML containing the details of the payment to be displayed on the user's screen.
-	 */
-	public function onDisplayPaymentInfo($order, $params, $payment_name) {
-		if($payment_name != $this->getName()) return;
-		$path = JPluginHelper::getLayoutPath('donorcart', 'donatelinq', 'paymentinfo');
-		$contents = '';
-		if(file_exists($path)) {
-			ob_start();
-			include $path;
-			$contents = ob_get_clean();
-		}
-		return $contents;
-	}
-
 
 	/*
 	 * Code to validate a request when returning from the payment gateway
@@ -219,7 +113,7 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 			return '<p>Unable to identify order for payment. Please contact the webmaster for assistance.</p>';
 		}
 
-		$ordermodel = FOFModel::getTmpInstance('orders','DonorcartModel');
+		$ordermodel = FOFModel::getAnInstance('orders','DonorcartModel');
 		$order = $ordermodel->getItem($order_id);
 		if(!is_object($order) || !$order->order_total || !is_object($order->cart) || !is_array($order->cart->items) || !is_object($order->payment)) return false;
 		if($order->payment_name != $this->getName() || $order->status=='complete') {
@@ -287,8 +181,8 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 
 
 		//now we will save the billing address if appropriate
-		if($user_id && $order->billing_address_id) {
-			$addressmodel = FOFModel::getTmpInstance('addresses','DonorcartModel');
+		if($user_id && $order->billing_address_id && !$order->billing_address->locked) {
+			$addressmodel = FOFModel::getAnInstance('addresses','DonorcartModel');
 			$addressdata = array_filter(array(
 				'donorcart_address_id' => $order->billing_address_id,
 				'user_id' => $user_id,
@@ -302,41 +196,11 @@ class plgDonorcartDonatelinq extends JPluginDonorcart {
 				'country' => JRequest::getString('Country',''),
 				'locked' => 1
 			));
-			if($order->billing_address_id) {
-				if(!$order->billing_address->locked) {
-					$addressdata = array_merge((array)$order->billing_address, $addressdata);
-					$addressmodel->save($addressdata);
-				}
-			}
+			$addressdata = array_merge((array)$order->billing_address, $addressdata);
+			$addressmodel->save($addressdata);
 		}
 
 		//finally, save the order
 		$ordermodel->save($orderdata);
-	}
-
-	private function _get_recurring_options() {
-		$recurring_options = array();
-		if($this->params->get('recur_twoweeks',false)) $recurring_options['2 Weeks'] = '2 Weeks';
-		if($this->params->get('recur_weekly',false)) $recurring_options['Weekly'] = 'Weekly';
-		if($this->params->get('recur_fourweeks',false)) $recurring_options['4 Weeks'] = '4 Weeks';
-		if($this->params->get('recur_monthly',false)) $recurring_options['Monthly'] = 'Monthly';
-		if($this->params->get('recur_querterly',false)) $recurring_options['Querterly'] = 'Querterly';
-		if($this->params->get('recur_semiannual',false)) $recurring_options['Semi-Annual'] = 'Semi-Annual';
-		if($this->params->get('recur_yearly',false)) $recurring_options['Yearly'] = 'Yearly';
-		return $recurring_options;
-	}
-
-	private function _calc_cc_processing_fee($order) {
-		if(!is_object($order->cart) || empty($order->cart->items)) return 0;
-		$cc_fees_amount = $this->params->get('cc_fees_amount',0);
-		if(!is_numeric($cc_fees_amount)) return 0;
-		$cc_fees_amount = round($cc_fees_amount,2)/100;
-		$cart_subtotal = 0;
-		foreach($order->cart->items as $item) {
-			if($item->sku!=$this->cc_fees_sku && $item->name!=$this->cc_fees_name) {
-				$cart_subtotal += ($item->qty * $item->price);
-			}
-		}
-		return round($cart_subtotal*$cc_fees_amount,2);
 	}
 }

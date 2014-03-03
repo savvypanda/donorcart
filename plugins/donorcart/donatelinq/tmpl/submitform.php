@@ -1,4 +1,9 @@
 <?php defined('_JEXEC') or die('Restricted Access');
+$ssl = $params->get('ssl_mode')?1:-1;
+$return_url = 'index.php?option=com_donorcart&task=postback&oid='.$order->donorcart_order_id;
+if($order->user_id) $return_url .= '&uid='.$order->user_id;
+$return_url = JRoute::_($return_url,true,$ssl);
+$payment_info = json_decode($order->payment->infohash,true);
 $recurring_frequency = isset($payment_info['selFrequency'])?$payment_info['selFrequency']:'One Time';
 
 ?>

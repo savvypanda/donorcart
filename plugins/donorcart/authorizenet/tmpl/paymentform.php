@@ -1,10 +1,11 @@
 <?php defined('_JEXEC') or die('Restricted Access');
 
-$allow_recurring_donations = $params->get('allow_recurring_donations',0);
-$recurring_options = $this->_get_recurring_options();
 $payment = isset($order->payment)?$order->payment:false;
 $payment_info = $payment?json_decode($payment->infohash,true):array();
-$selected_frequency = array_key_exists('selFrequency',$payment_info)?$payment_info['selFrequency']:'';
+
+$allow_recurring_donations = $params->get('allow_recurring_donations',0);
+$recurring_options = $this->_get_recurring_options();
+$selected_frequency = array_key_exists('payment_frequency',$payment_info)?$payment_info['payment_frequency']:'';
 
 $cc_fee_option = $this->params->get('pay_cc_fee');
 $cc_fee_type = $this->params->get('cc_fee_type','percent');
@@ -58,7 +59,7 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 				recurring_option.change(update_recurring_option);
 			})(jQuery);
 		</script>
-		<?php
+	<?php
 	} else {
 		//The user has the option between a one-time donation or multiple recurring donation options
 		?>
@@ -91,21 +92,18 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 				recurring_selector.change(update_recurring_options);
 			})(jQuery);
 		</script>
-		<?php
+	<?php
 	}
 }
 
-
-
-
-	//now let's display the "Pay CC Fees" option
+//display the "Pay CC Fees" option
 if($cc_fee_option==1 && $cc_fee_amount > 0) {
 	$pay_cc_fee = array_key_exists('pay_cc_fee',$payment_info)?$payment_info['pay_cc_fee']:false;
 	$cc_fee_text = 'Pay the '.($cc_fee_type=='percent'?$cc_fee_amount.'% ($'.number_format($cc_fee_total,2).')':'$'.number_format($cc_fee_total,2)).' credit card processing fee.'; ?>
-	<div class="field checkbox"><input type="checkbox" name="<?=$this->getName()?>_pay_cc_fee" id="<?=$this->getName()?>-pay-cc-fee-option"<?=($pay_cc_fee?' checked="checked"':'')?> value="1"><label for="<?=$this->getName()?>-pay-cc-fee-option"><?=$cc_fee_text?></label></div>
+	<div class="field checkbox"><input type="checkbox" name="<?=$this->getName()?>_pay_cc_fee" id="anet-pay-cc-fee-option"<?=($pay_cc_fee?' checked="checked"':'')?> value="1"><label for="anet-pay-cc-fee-option"><?=$cc_fee_text?></label></div>
 <?php }
 ?>
 <p><small><em>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</em></small></p>
-<?php if($cc_fee_option==2 && is_numeric($cc_fee_amount)) { ?>
+<?php if($cc_fee_option==2 && $cc_fee_amount) { ?>
 	<p><small><em>Your donation will include a <?=($cc_fee_type=='percent'?$cc_fee_amount.'% ($'.number_format($cc_fee_total,2).')':'$'.number_format($cc_fee_total,2))?> credit card processing fee.</em></small></p>
 <?php }

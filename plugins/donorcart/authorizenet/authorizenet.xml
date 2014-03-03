@@ -32,6 +32,52 @@
 					<option value="live">Live</option>
 					<!--option value="eProcessingNetwork">eProcessingNetwork</option-->
 				</field>
+				<!--field name="echeck_allowed" type="list" default="0" label="E-Check Enabled" description="Whether or not eCheck.Net has been enabled in the authorize.net account. If unsure, set to no.">
+					<option value="1">JYes</option>
+					<option value="0">JNo</option>
+				</field-->
+			</fieldset>
+			<fieldset name="fees" label="Processing Fee" description="">
+				<field name="pay_cc_fee" type="list" default="1" label="User pays CC Fee?" description="Allow, or even require, the user to pay the credit card processing fees">
+					<option value="0">No</option>
+					<option value="1">Optional</option>
+					<option value="2">Yes</option>
+				</field>
+				<field name="cc_fee_type" type="list" default="percent" label="CC Fee Type" description="Whether the user will be asked for a percent or a flat fee for credit card processing (if applicable)">
+					<option value="percent">Percent</option>
+					<option value="fixed">Flat Fee</option>
+				</field>
+				<field name="cc_fee_amount" type="text" default="3.2" label="CC Fee Amount" description="The amount of the credit card processing fees that the user will be asked for to 2 decimal places (eg: for 3.25% use '3.25'. For $2.50 use '2.50')" />
+			</fieldset>
+			<fieldset name="recurring" label="Recurring Payments" description="If recurring donations have been enabled, select the allowed automated recurring donation frequencies.">
+				<field name="recur_twoweeks" type="list" default="0" label="Allow 2 Weeks Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_weekly" type="list" default="0" label="Allow Weekly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_fourweeks" type="list" default="0" label="Allow 4 Weeks Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_monthly" type="list" default="1" label="Allow Monthly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_querterly" type="list" default="1" label="Allow Quarterly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_semiannual" type="list" default="0" label="Allow Semi-Annual Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
+				<field name="recur_yearly" type="list" default="0" label="Allow Yearly Payments">
+					<option value="0">No</option>
+					<option value="1">Yes</option>
+				</field>
 			</fieldset>
 		</fields>
 	</config>

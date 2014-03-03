@@ -58,6 +58,7 @@ class DonorcartModelCarts extends FOFModel {
 
 	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '', $img = '', $recurring = false, $from_checkout = false) {
 		if(!$this->id) {
+			if($from_checkout) return false;
 			//if we do not already have a cart, create one and then proceed
 			$this->createEmptyCart();
 			$ordermodel = false;

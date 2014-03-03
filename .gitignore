@@ -89,6 +89,8 @@
 !plugins/donorcart/authorizenet/anet_php_sdk/lib/shared/*
 !plugins/donorcart/authorizenet/anet_php_sdk/lib/ssl/
 !plugins/donorcart/authorizenet/anet_php_sdk/lib/ssl/*
+!plugins/donorcart/authorizenet/tmpl/
+!plugins/donorcart/authorizenet/tmpl/*
 !plugins/donorcart/donatelinq/
 !plugins/donorcart/donatelinq/*
 !plugins/donorcart/donatelinq/tmpl/
