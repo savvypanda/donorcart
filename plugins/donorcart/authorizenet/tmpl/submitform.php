@@ -29,7 +29,7 @@ $hashstring = $api_login_id."^".$fp_sequence."^".$fp_timestamp."^".$order->order
 $fingerprint = function_exists('hash_hmac')?hash_hmac("md5", $hashstring, $transaction_key):bin2hex(mhash(MHASH_MD5, $hashstring, $transaction_key));
 
 ?>
-<form name="dcart-authorizenet-redirectform" id="dcart-authorizenet-redirectform" method="POST" action="<?=modepath?>">
+<form name="dcart-authorizenet-redirectform" id="dcart-authorizenet-redirectform" method="POST" action="<?=$modepath?>">
 	<input type='hidden' name='x_login' value='<?=$api_login_id?>' />
 	<input type='hidden' name='x_fp_hash' value='<?=$fingerprint?>' />
 	<input type='hidden' name='x_fp_timestamp' value='<?=$fp_timestamp?>' />

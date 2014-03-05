@@ -12,9 +12,14 @@
 
 	<files>
 		<filename plugin="authorizenet">authorizenet.php</filename>
-		<folder>anet_php_sdk</folder>
 		<filename>index.html</filename>
+		<folder>tmpl</folder>
+		<folder>language</folder>
 	</files>
+
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_donorcart_authorizenet.ini</language>
+	</languages>
 
 	<config>
 		<fields name="params">

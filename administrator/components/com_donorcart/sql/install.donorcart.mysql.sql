@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_payments` (
 CREATE TABLE IF NOT EXISTS `#__donorcart_carts` (
 	`donorcart_cart_id` SERIAL,
 	`user_id` INT(11),
+	`recurring` TINYINT(1) NOT NULL DEFAULT 0, #Deprecated. In the future this information will be moved to new fields on the orders table
 	`session_id` VARCHAR(200),
-	`recurring` TINYINT(1) NOT NULL DEFAULT 0,
 	`subtotal` DECIMAL(8,2) NOT NULL DEFAULT 0.00,
 	PRIMARY KEY (`donorcart_cart_id`),
 	FOREIGN KEY (`user_id`) REFERENCES `#__users`(`id`)
@@ -65,6 +65,9 @@ CREATE TABLE IF NOT EXISTS `#__donorcart_orders` (
 	`payment_name` VARCHAR(20),
 	`payment_id` BIGINT(20) UNSIGNED,
 	`order_total` DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+#	`recurring_frequency` VARCHAR(32) NOT NULL DEFAULT 'One Time',
+#	`recurring_start_date` DATE NOT NULL DEFAULT '0000-00-00',
+#	`recurring_end_date` DATE NOT NULL DEFAULT '0000-00-00',
 	`special_instr` TEXT,
 	`viewtoken` VARCHAR(30),
 	`created_by` BIGINT(20) NOT NULL DEFAULT '0',

@@ -1,4 +1,5 @@
 <?php defined('_JEXEC') or die('Restricted Access');
+require_once(JPATH_SITE.DIRECTORY_SEPARATOR.'administrator'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'com_donorcart'.DIRECTORY_SEPARATOR.'helpers'.DIRECTORY_SEPARATOR.'plugin.php');
 
 class plgDonorcartAuthorizenet extends JPluginDonorcart {
 	protected $_name = 'authorizenet';
@@ -22,16 +23,23 @@ class plgDonorcartAuthorizenet extends JPluginDonorcart {
 
 	public function onBeforePostback($plugin_validated) {
 		if($plugin_validated || !$this->isActive()) return;
-		$md5_hash = JRequest::getString('x_MD5_Hash','','post');
-		if($md5_hash && JRequest::getInt('x_invoice_num',false) && JRequest::getInt('x_response_code',false) && JRequest::getInt('x_trans_id',false)
-		   			 && $md5_hash==(strtoupper(md5($this->params->get('hash','').$this->params->get('login_id').JRequest::getString('x_trans_id','','post').JRequest::getString('x_amount','0.00','post'))))) {
-			$plugin_validated = 'authorizenet';
-			return true;
+		$md5_hash = JRequest::getString('x_MD5_Hash','');
+		if($md5_hash) {
+			$invoice_num = JRequest::getInt('x_invoice_num',false);
+			$response_code = JRequest::getInt('x_response_code',false);
+			$transaction_id = JRequest::getString('x_trans_id',false);
+			if($invoice_num && $response_code && $transaction_id !== false) {
+				$verification_hash = strtoupper(md5($this->params->get('hash','').$this->params->get('login_id').JRequest::getString('x_trans_id','').JRequest::getString('x_amount','0.00')));
+				if($md5_hash==$verification_hash) {
+					$plugin_validated = 'authorizenet';
+					return true;
+				}
+			}
 		}
 		return false;
 	}
 
-	public function onPostback($order, $is_valid, $plugin_validated) {
+	public function onPostback($is_valid, $plugin_validated) {
 		if($plugin_validated != $this->getName() || !$is_valid) return;
 
 		//now let's confirm that the transaction was accepted
@@ -58,7 +66,7 @@ class plgDonorcartAuthorizenet extends JPluginDonorcart {
 		}
 
 		//finally, let's the get the order details and save the payment information
-		$order_id = JRequest::getInt('x_invoice_num',false,'post');
+		$order_id = JRequest::getInt('x_invoice_num',false);
 		if(!$order_id) {
 			$is_valid = false;
 			return '<p>Unable to identify order for payment. Please contact the webmaster for assistance.</p>';
@@ -72,12 +80,12 @@ class plgDonorcartAuthorizenet extends JPluginDonorcart {
 			return '<p>Unable to update payment details on your order. Payment has already been completed. Please contact your administrator for assistance.</p>';
 		}
 
-		$external_reference_id = JRequest::getString('x_trans_id',0,'post');
-		if(!$external_reference_id || !is_numeric($external_reference_id)) {
+		$external_reference_id = JRequest::getString('x_trans_id',false);
+		if($external_reference_id===false || !is_numeric($external_reference_id)) {
 			$is_valid = false;
 			return '<p>Invalid reference from payment gateway. Please contact your administrator for assistance</p>';
 		}
-		$user_id = JRequest::getInt('x_cust_id',0,'post');
+		$user_id = JRequest::getInt('x_cust_id',0);
 
 		//sanity check. Make sure that the user on the order is the same as the user in the request
 		if(($order->user_id || $user_id) && $order->user_id != $user_id) {
@@ -99,6 +107,7 @@ class plgDonorcartAuthorizenet extends JPluginDonorcart {
 		$paymentinfo = json_decode($order->payment->infohash,true);
 		//$paymentinfo = array_merge($paymentinfo, $_POST);
 		//TODO: get the desired payment information from the post. Don't just use the entire post.
+		$paymentinfo = array_merge($paymentinfo, $_POST);
 
 		$paymentdata = array(
 			'donorcart_payment_id' => $order->payment->donorcart_payment_id,
@@ -160,7 +169,7 @@ class plgDonorcartAuthorizenet extends JPluginDonorcart {
 	}
 
 	public function onAfterPostback($is_valid, $plugin_validated) {
-		if($plugin_validated == $this->getName && $is_valid) {
+		if($plugin_validated == $this->getName() && $is_valid) {
 			$sitename = JFactory::getApplication()->getCfg('sitename');
 			$ssl = JComponentHelper::getParams('com_donorcart')->get('ssl_mode')?1:-1;
 			$returnurl = JRoute::_('index.php?option=com_donorcart',false,$ssl);

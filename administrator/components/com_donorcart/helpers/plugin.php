@@ -72,6 +72,7 @@ class JPluginDonorcart extends JPlugin {
 		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), 'paymentform');
 		$contents = '';
 		if(file_exists($path)) {
+			$this->loadLanguage();
 			ob_start();
 			include $path;
 			$contents = ob_get_clean();
@@ -143,6 +144,7 @@ class JPluginDonorcart extends JPlugin {
 		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), 'submitform');
 		$contents = '';
 		if(file_exists($path)) {
+			$this->loadLanguage();
 			ob_start();
 			include $path;
 			$contents = ob_get_clean();
@@ -161,9 +163,11 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	public function onDisplayPaymentInfo($order, $params, $payment_name) {
 		if($payment_name != $this->getName()) return;
+
 		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), 'paymentinfo');
 		$contents = '';
 		if(file_exists($path)) {
+			$this->loadLanguage();
 			ob_start();
 			include $path;
 			$contents = ob_get_clean();
@@ -246,6 +250,31 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	public function onOrderCompletion($order) {
 		return;
+	}
+
+	/*
+	 * Outputs a form to include the credit card processing fee
+	 *
+	 * @param DonorcartModelOrders order The order we are displaying the payment form for
+	 * @param boolean cc_fee_selected True if the user has already elected to pay the processing fee
+	 */
+	protected function _display_processing_fee_form($order, $cc_fee_selected = false) {
+		$cc_fee_option = $this->params->get('pay_cc_fee');
+		$cc_fee_type = $this->params->get('cc_fee_type','percent');
+		$cc_fee_amount = $this->params->get('cc_fee_amount',0);
+		$cc_fee_total = $this->_calc_cc_processing_fee($order);
+		if(!is_numeric($cc_fee_amount)) {
+			$cc_fee_amount = 0;
+		} else {
+			$cc_fee_amount = round($cc_fee_amount,2);
+		}
+
+		if($cc_fee_option==1 && $cc_fee_total > 0) {
+			$cc_fee_text = $cc_fee_type=='percent'?JText::sprintf('PLG_DONORCART_'.strtoupper($this->getName()).'_PAY_CC_FEE_PERCENT',$cc_fee_amount, $cc_fee_total):JText::sprintf('PLG_DONORCART_'.strtoupper($this->getName()).'_PAY_CC_FEE_FIXED',$cc_fee_total); ?>
+			<div class="field checkbox"><input type="checkbox" name="<?=$this->getName()?>_pay_cc_fee" id="<?=$this->getName()?>-pay-cc-fee-option"<?=($cc_fee_selected?' checked="checked"':'')?> value="1"><label for="<?=$this->getName()?>-pay-cc-fee-option"><?=$cc_fee_text?></label></div>
+		<?php } elseif($cc_fee_option==2 && $cc_fee_total > 0) { ?>
+			<p><small><em>Your donation will include a <?=($cc_fee_type=='percent'?$cc_fee_amount.'% ($'.number_format($cc_fee_total,2).')':'$'.number_format($cc_fee_total,2))?> credit card processing fee.</em></small></p>
+		<?php }
 	}
 
 	/*
@@ -334,5 +363,4 @@ class JPluginDonorcart extends JPlugin {
 		if($this->params->get('recur_yearly',false)) $recurring_options['Yearly'] = 'Yearly';
 		return $recurring_options;
 	}
-
 }

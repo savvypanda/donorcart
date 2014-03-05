@@ -6,17 +6,6 @@ $payment = isset($order->payment)?$order->payment:false;
 $payment_info = $payment?json_decode($payment->infohash,true):array();
 $selected_frequency = array_key_exists('selFrequency',$payment_info)?$payment_info['selFrequency']:'';
 
-$cc_fee_option = $this->params->get('pay_cc_fee');
-$cc_fee_type = $this->params->get('cc_fee_type','percent');
-$cc_fee_amount = $this->params->get('cc_fee_amount',0);
-$cc_fee_total = $this->_calc_cc_processing_fee($order);
-if(!is_numeric($cc_fee_amount)) {
-	$cc_fee_amount = 0;
-} else {
-	$cc_fee_amount = round($cc_fee_amount,2);
-}
-
-
 if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user can only select one-time donations ?>
 	<input type="hidden" name="<?=$this->getName()?>_payment_frequency" value="One Time">
 <?php } elseif($allow_recurring_donations==2) {
@@ -28,7 +17,7 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 	<?php } else {
 		//we have more than one option, which may be accomplished by a simple select list ?>
 		<div class="field select">
-			<label for="<?=$this->getName()?>_payment_frequency">Recurring Frequency: </label>
+			<label for="<?=$this->getName()?>_payment_frequency"><?=JText::_('PLG_DONORCART_DONATELINQ_RECURRING_FREQUENCY_LABEL')?>: </label>
 			<select name="<?=$this->getName()?>_payment_frequency" id="<?=$this->getName()?>_payment_frequency">
 				<?php foreach($recurring_options as $value => $text) { ?>
 					<option value="<?=$value?>"<?=(($value==$selected_frequency)?' selected="selected"':'')?>><?=$text?></option>
@@ -64,7 +53,7 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 		?>
 		<input type="hidden" name="<?=$this->getName()?>_payment_frequency" value="One Time">
 		<div class="field select" id="dcart-donatelinq-frequencyouter">
-			<label for="dcart-donatelinq-frequencyselector">Recurring Frequency: </label>
+			<label for="dcart-donatelinq-frequencyselector"><?=JText::_('PLG_DONORCART_DONATELINQ_RECURRING_FREQUENCY_LABEL')?>: </label>
 			<select id="dcart-donatelinq-frequencyselector">
 				<?php foreach($recurring_options as $value => $text) { ?>
 					<option value="<?=$value?>"<?=(($value==$selected_frequency)?' selected="selected"':'')?>><?=$text?></option>
@@ -95,17 +84,5 @@ if($allow_recurring_donations==0 || count($recurring_options)==0) { //the user c
 	}
 }
 
-
-
-
-	//now let's display the "Pay CC Fees" option
-if($cc_fee_option==1 && $cc_fee_amount > 0) {
-	$pay_cc_fee = array_key_exists('pay_cc_fee',$payment_info)?$payment_info['pay_cc_fee']:false;
-	$cc_fee_text = 'Pay the '.($cc_fee_type=='percent'?$cc_fee_amount.'% ($'.number_format($cc_fee_total,2).')':'$'.number_format($cc_fee_total,2)).' credit card processing fee.'; ?>
-	<div class="field checkbox"><input type="checkbox" name="<?=$this->getName()?>_pay_cc_fee" id="<?=$this->getName()?>-pay-cc-fee-option"<?=($pay_cc_fee?' checked="checked"':'')?> value="1"><label for="<?=$this->getName()?>-pay-cc-fee-option"><?=$cc_fee_text?></label></div>
-<?php }
-?>
-<p><small><em>After confirming your order, you will be redirected to our secure processing server to enter your payment details.</em></small></p>
-<?php if($cc_fee_option==2 && is_numeric($cc_fee_amount)) { ?>
-	<p><small><em>Your donation will include a <?=($cc_fee_type=='percent'?$cc_fee_amount.'% ($'.number_format($cc_fee_total,2).')':'$'.number_format($cc_fee_total,2))?> credit card processing fee.</em></small></p>
-<?php }
+$this->_display_processing_fee_form($order, (array_key_exists('pay_cc_fee',$payment_info)?$payment_info['pay_cc_fee']:false)); ?>
+<p><small><em><?=JText::_('PLG_DONORCART_DONATELINQ_REDIRECT_AFTER_CONFIRM')?></em></small></p>

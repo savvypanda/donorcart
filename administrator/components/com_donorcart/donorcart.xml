@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="2.5.0" method="upgrade">
 	<name>Donor Cart</name>
-	<creationDate>February 2014</creationDate>
+	<creationDate>March 2014</creationDate>
 	<author>Levi Carter</author>
 	<authorEmail>levi@savvypanda.com</authorEmail>
 	<authorUrl>http://savvypanda.com</authorUrl>
 	<copyright></copyright>
 	<license></license>
-	<version>0.2.7</version>
+	<version>0.2.8</version>
 	<description>Provides a simple method to add items to a shopping cart and to checkout using a payment gateway of your choice.</description>
 
 	<scriptfile>script.donorcart.php</scriptfile>
