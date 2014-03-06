@@ -1,20 +1,8 @@
 <?php defined('_JEXEC') or die("Restricted Access");
+include_once(JPATH_BASE.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'com_donorcart'.DIRECTORY_SEPARATOR.'includes.php');
 
 $display_cart = isset($this->display_cart)?$this->display_cart:($this->params->get('display_cart') == 1);
 $login_option = $this->params->get('login_option',1);
-
-if($this->params->get('load_jquery')) {
-	JHtml::_('jquery.framework');
-}
-if($uiversion = $this->params->get('jqueryui_version')) {
-	JFactory::getDocument()->addScript('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/jquery-ui.min.js');
-	if($uitheme = $this->params->get('jqueryui_theme')) {
-		JFactory::getDocument()->addStyleSheet('http://ajax.googleapis.com/ajax/libs/jqueryui/'.$uiversion.'/themes/'.$uitheme.'/jquery-ui.min.css');
-	}
-}
-FOFTemplateUtils::addCSS('media://com_donorcart/donorcart.css');
-FOFTemplateUtils::addJS('media://com_donorcart/donorcart.js');
-
 ?>
 <div id="donorcart_checkout_container">
 	<?php if($display_cart): //Display the cart if we are supposed to ?>

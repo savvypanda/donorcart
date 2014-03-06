@@ -68,10 +68,19 @@
 !media/com_donorcart/images/
 !media/com_donorcart/images/*
 
-# Do not ignore the module
+# Do not ignore the modules
 !modules/
-!modules/mod_donorcart/
-!modules/mod_donorcart/*
+!modules/mod_donorcart_cart/
+!modules/mod_donorcart_cart/*
+!modules/mod_donorcart_form/
+!modules/mod_donorcart_form/*
+!modules/mod_donorcart_form/language/
+!modules/mod_donorcart_form/language/*
+!modules/mod_donorcart_form/language/en-GB/
+!modules/mod_donorcart_form/language/en-GB/*
+!modules/mod_donorcart_form/tmpl/
+!modules/mod_donorcart_form/tmpl/*
+
 
 # Do not ignore our plugins
 !plugins/

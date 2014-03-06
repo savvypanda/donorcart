@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="2.5" client="site">
+	<name>Donorcart - Form</name>
+	<author>SavvyPanda</author>
+	<creationDate>March 2014</creationDate>
+	<copyright>This module is released under the GNU/GPL License</copyright>
+	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<authorEmail>support@savvypanda.com</authorEmail>
+	<authorUrl>http://savvypanda.com</authorUrl>
+	<version>1.0.0</version>
+	<description>Displays a form for adding an item to your cart.</description>
+	<files>
+		<filename module="mod_donorcart_form">mod_donorcart_form.php</filename>
+		<filename>index.html</filename>
+		<folder>tmpl</folder>
+		<folder>language</folder>
+	</files>
+
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.mod_donorcart_form.ini</language>
+	</languages>
+
+	<config>
+		<fields name="params">
+			<fieldset name="basic" label="COM_MODULES_BASIC_FIELDSET_LABEL">
+				<field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL" description="JFIELD_ALT_MODULE_LAYOUT_DESC" />
+				<field name="allowrecurring" type="list" default="0" label="Allow Recurring Donations?" description="">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>
+				</field>
+				<field name="moduleclass_sfx" type="textarea" rows="3" label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+				<field name="cache" type="list" default="1" label="COM_MODULES_FIELD_CACHING_LABEL" description="COM_MODULES_FIELD_CACHING_DESC">
+					<option value="1">JGLOBAL_USE_GLOBAL</option>
+					<option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+				</field>
+				<field name="cache_time" type="text" default="900" label="COM_MODULES_FIELD_CACHE_TIME_LABEL" description="COM_MODULES_FIELD_CACHE_TIME_DESC" />
+				<field name="cachemode" type="hidden" default="static">
+					<option value="static"></option>
+				</field>
+			</fieldset>
+			<fieldset name="form" label="Form">
+				<field type="text" name="sku" default="DONATE" label="SKU" description="The SKU for the item to be added to the cart" />
+				<field type="text" name="name" default="" label="Name" description="The default name for the item to be added to the cart (if not specified, the user will be able to edit the name)" />
+				<field type="list" name="editname" default="0" label="Edit Name" description="Whether or not to allow the user to edit the item name">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>
+				</field>
+				<field type="text" name="qty" default="1" label="Qty" description="The number of items to be added to the cart (If 0 or not specified, the user will be able to edit the qty)" />
+				<field type="list" name="editqty" default="0" label="Edit Qty" description="Whether or not to allow the user to edit the item qty">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>
+				</field>
+				<field type="text" name="price" default="" label="Price" description="The Price for the item to be added to the cart (If 0 or not specified, user will be able to edit the price)" />
+				<field type="list" name="editprice" default="0" label="Edit Price" description="Whether or not to allow the user to edit the item price">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>
+				</field>
+				<field type="text" name="img" default="" label="Img" description="The absolute URL for the item image (optional)" />
+				<field type="text" name="url" default="" label="Url" description="The absolute URL for the link to this item's page (optional)" />
+			</fieldset>
+			<fieldset name="labels" label="Labels" description="All label fields are translatable">
+				<field type="text" name="namelabel" default="For: " label="Name Label" description="The label for the name field. If excluded there will be no label" />
+				<field type="text" name="nameplaceholder" default="For: " label="Name Placeholder" description="The placeholder text for the name field. If excluded there will be no placeholder" />
+				<field type="text" name="pricelabel" default="Amount: " label="Price Label" description="The label for the price field. If excluded there will be no label" />
+				<field type="text" name="priceplaceholder" default="Amount: " label="Price Placeholder" description="The placeholder text for the price field. If excluded there will be no placeholder" />
+				<field type="text" name="qtylabel" default="Qty: " label="Qty Label" description="The label for the qty field. If excluded there will be no label" />
+				<field type="text" name="qtyplaceholder" default="Qty: " label="Qty Placeholder" description="The placeholder text for the qty field. If excluded there will be no placeholder" />
+				<field type="text" name="recurringlabel" default="Recurring Donation" label="Recurring Label" description="The text to use for the recurring button" />
+				<field type="text" name="submitlabel" default="Donate" label="Submit Label" description="The text to use for the submit button" />
+			</fieldset>
+			<fieldset name="advanced" label="Advanced" description="">
+				<field type="textarea" name="priceoptions" default="" label="Price Options" description="List of suggested donation amounts, one on each line using value=description. If '0' is an option, the user will be able to enter a custom donation amount." />
+				<field type="textarea" name="qtyoptions" default="" label="Qty Options" description="List of suggested quantities, one on each line using value=description. If '0' is an option, the user will be able to enter a custom quantity." />
+				<!--field type="text" name="recurringoptions" default="" label="Price Options" description="List of recurring donation options, including names and values. Eg: [TO BE COMPLETED]" /-->
+			</fieldset>
+		</fields>
+	</config>
+</extension>

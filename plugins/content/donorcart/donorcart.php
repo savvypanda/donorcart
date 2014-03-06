@@ -18,6 +18,7 @@ class plgContentDonorcart extends JPlugin {
 	private function _prepareContent(&$row, &$params) {
 		$startpos = 0;
 		while(($startpos = strpos($row, '{donorcart-add-to-cart', $startpos)) !== false) {
+			include_once(JPATH_BASE.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'com_donorcart'.DIRECTORY_SEPARATOR.'includes.php');
 			$this->replace($row, $startpos++);
 		}
 		return true;

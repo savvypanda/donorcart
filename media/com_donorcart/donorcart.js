@@ -10,19 +10,20 @@
 	 * @param checkout_alert = 'skip' to automatically proceed to checkout. False to continue shopping. True to ask the user what they want to do.
 	 */
 	function dcartLoader(target, postdata, checkout_alert) {
-		var dcart_target = '#dcart_target';
+		var dcart_target = $('#dcart_target');
 		if(typeof postdata==='undefined')postdata=false;
 		if(typeof checkout_alert==='undefined')checkout_alert=false;
+		if(!dcart_target.length)checkout_alert='skip';
 
 		//Replace the cart with a loading message
-		$(dcart_target).html('<img src="'+sp_website_root+'media/com_donorcart/images/ajax_loading.gif" alt="'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...')+'" height="16" width="16" align="left" border="0" /> &nbsp; &nbsp; '+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...'));
+		dcart_target.html('<img src="'+sp_website_root+'media/com_donorcart/images/ajax_loading.gif" alt="'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...')+'" height="16" width="16" align="left" border="0" /> &nbsp; &nbsp; '+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_LOADING','Loading...'));
 
 		if(postdata != false) {
 			//if we have anything to post, use a post request
 			var settings = {url: target, type: 'POST', data: postdata};
 			$.ajax(settings).done(function(data){
 				//if the request was successful, replace the cart with the updated cart
-				$(dcart_target).html(data);
+				dcart_target.html(data);
 				if(checkout_alert != false) {
 					if(checkout_alert === 'skip') {
 						//we are supposed to skip straight to checkout
@@ -52,13 +53,13 @@
 			}).fail(function(data) {
 				//if the request failed, replace the cart with an error message and show it to the user in a popup
 				if(!data) data='Request Failed';
-				$(dcart_target).html(data);
+				dcart_target.html(data);
 				$('<div>'+Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_FAILURE','Failed to add item to cart. Please review your selection and try again.')+'</div>').appendTo('body')
 					.dialog({modal:true, title: Joomla.JText._('COM_DONORCART_JS_ADD_TO_CART_FAILURE_TITLE','Failed to add item to cart'), zIndex: 10000, autoOpen: true, width: 'auto', resizable:false});
 			});
 		} else {
 			//if this is a get request, simply display the output in the cart
-			$.get(target, function(data){$(dcart_target).html(data)});
+			$.get(target, function(data){dcart_target.html(data)});
 		}
 	}
 

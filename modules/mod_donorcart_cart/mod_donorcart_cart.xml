@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension method="upgrade" client="site" version="1.6.0" type="module">
+ 	<name>Donorcart - Cart</name>
+	<author>SavvyPanda</author>
+	<creationDate>March 2014</creationDate>
+	<copyright>This module is released under the GNU/GPL License</copyright> 
+	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<authorEmail>support@savvypanda.com</authorEmail>
+	<authorUrl>http://savvypanda.com</authorUrl>
+	<version>1.0.0</version>
+	<description>This simple cart module displays the cart from the donorcart component. It is configurable in the donorcart component parameters.</description>
+	<files>
+		<filename module="mod_donorcart_cart">mod_donorcart_cart.php</filename>
+		<filename>index.html</filename>
+	</files>
+</extension>
