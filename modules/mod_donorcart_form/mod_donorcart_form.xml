@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="module" version="2.5" client="site">
+<extension type="module" version="2.5" client="site" method="upgrade">
 	<name>Donorcart - Form</name>
 	<author>SavvyPanda</author>
 	<creationDate>March 2014</creationDate>
@@ -23,7 +23,7 @@
 	<config>
 		<fields name="params">
 			<fieldset name="basic" label="COM_MODULES_BASIC_FIELDSET_LABEL">
-				<field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL" description="JFIELD_ALT_MODULE_LAYOUT_DESC" />
+				<field name="layout" type="modulelayout" default="default" label="JFIELD_ALT_LAYOUT_LABEL" description="JFIELD_ALT_MODULE_LAYOUT_DESC" />
 				<field name="allowrecurring" type="list" default="0" label="Allow Recurring Donations?" description="">
 					<option value="1">JYES</option>
 					<option value="0">JNO</option>
@@ -68,10 +68,10 @@
 				<field type="text" name="recurringlabel" default="Recurring Donation" label="Recurring Label" description="The text to use for the recurring button" />
 				<field type="text" name="submitlabel" default="Donate" label="Submit Label" description="The text to use for the submit button" />
 			</fieldset>
-			<fieldset name="advanced" label="Advanced" description="">
-				<field type="textarea" name="priceoptions" default="" label="Price Options" description="List of suggested donation amounts, one on each line using value=description. If '0' is an option, the user will be able to enter a custom donation amount." />
-				<field type="textarea" name="qtyoptions" default="" label="Qty Options" description="List of suggested quantities, one on each line using value=description. If '0' is an option, the user will be able to enter a custom quantity." />
-				<!--field type="text" name="recurringoptions" default="" label="Price Options" description="List of recurring donation options, including names and values. Eg: [TO BE COMPLETED]" /-->
+			<fieldset name="advanced" label="Advanced" description="Text is translatable. Values are not.">
+				<field type="textarea" name="priceoptions" default="" label="Price Options" description="List of suggested donation amounts, one on each line using value=description. If '00' is an option, the user will be able to enter a custom donation amount." />
+				<field type="textarea" name="qtyoptions" default="" label="Qty Options" description="List of suggested quantities, one on each line using value=description. If '00' is an option, the user will be able to enter a custom quantity." />
+				<field type="textarea" name="recurringoptions" default="" label="Recurring Options" description="List of recurring donation options, one on each line using value=description." />
 			</fieldset>
 		</fields>
 	</config>

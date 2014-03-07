@@ -30,6 +30,7 @@ class plgContentDonorcart extends JPlugin {
 			return false;
 		}
 
+		//set defaults
 		$options = array(
 			'title' => '',
 			'sku' => '',
@@ -59,7 +60,7 @@ class plgContentDonorcart extends JPlugin {
 			'submit' => 'Give',
 		);
 
-
+		//fetch options from the plugin tag
 		$argc = preg_match_all('/([a-zA-Z]+)=(?|"([^"]*)"|([^ ]*))/', substr($row, $startpos+19, $endpos-$startpos-19), $matches);
 		for($i = 0; $i<$argc; $i++) {
 			switch($matches[1][$i]) {
@@ -95,37 +96,23 @@ class plgContentDonorcart extends JPlugin {
 			}
 		}
 
-		$form = $this->buildItemForm($options);
-		if(!$form) {
-			return false;
-		}
-
-		$row = substr_replace($row, $form, $startpos, $endpos-$startpos+1);
-		return true;
-	}
-
-	private function buildItemForm($options) {
+		//basic validations and transformations
 		if(!$options['sku']) {
 			return false;
 		}
-		$unique_form_id = uniqid();
-
 		if(!$options['name']) {
 			$options['editname'] = true;
 		}
-
 		if(!$options['price'] && empty($options['priceoptions'])) {
 			$options['editprice'] = true;
 			$options['editqty'] = false;
 			$options['qty'] = '1';
 		}
-
 		if(!empty($options['priceoptions'])) {
 			$options['editprice'] = false;
 			$options['editqty'] = false;
 			$options['qty'] = '1';
 		}
-
 		if(!$options['qty'] && empty($options['qtyoptions'])) {
 			$options['editqty'] = true;
 			$options['qty'] = '1';
@@ -134,126 +121,22 @@ class plgContentDonorcart extends JPlugin {
 			$options['editqty'] = false;
 		}
 
-		$parts = array(
-			'<form method="post" action="'.JRoute::_('index.php').'" class="dcartadd'.($options['skipprompt']?' dnoprompt':'').(empty($options['classname'])?'':' '.$options['classname']).'">',
-			JHtml::_('form.token'),
-			'<input type="hidden" name="option" value="com_donorcart">',
-			'<input type="hidden" name="view" value="cart">',
-			'<input type="hidden" name="task" value="addItem">',
-			'<input type="hidden" name="format" value="raw">',
-			'<input type="hidden" name="template" value="system">',
-			'<input type="hidden" name="my-item-id" value="'.htmlentities($options['sku'], ENT_COMPAT).'">'
-		);
 
-		if($options['title']) {
-			$parts[] = '<h3>'.JText::_($options['title']).'</h3>';
+
+
+		$path = JPluginHelper::getLayoutPath('content', 'donorcart');
+		$form = '';
+		if(file_exists($path)) {
+			$this->loadLanguage();
+			ob_start();
+			include $path;
+			$form = ob_get_clean();
+		}
+		if(empty($form)) {
+			return false;
 		}
 
-		if($options['img']) {
-			$parts[] = '<div class="dcart-item-image">';
-			if($options['url']) {
-				$parts[] = '<a href="'.JRoute::_($options['url']).'">';
-			}
-			$parts[] = '<input type="hidden" name="my-item-img" value="'.htmlentities($options['img']).'">';
-			$parts[] = '<img src="'.htmlentities($options['img'], ENT_COMPAT).'" alt="'.htmlentities($options['name'], ENT_COMPAT).'" />';
-			if($options['url']) {
-				$parts[] = '</a>';
-			}
-			$parts[] = '</div>';
-		}
-
-		$parts[] = '<div class="cart-item-form">';
-		if($options['editname']) {
-			$parts[] = '<div class="dcart-item-name dcart-editable">';
-			if(!empty($options['namelabel'])) $parts[] = '<label for="my-item-name">'.JText::_($options['namelabel']).': </label>';
-			$parts[] = '<input type="text" name="my-item-name" '.(($options['nameplaceholder'])?'placeholder':'value').'="'.htmlentities($options['name'], ENT_COMPAT).'" class="input-full">';
-			$parts[] = '</div>';
-		} else {
-			if(!$options['hidename']) {
-				$parts[] = '<div class="dcart-item-name dcart-static">';
-				$parts[] = '<span class="cart-item-name">'.$options['name'].'</span>';
-				$parts[] = '</div>';
-			}
-			$parts[] = '<input type="hidden" name="my-item-name" value="'.htmlentities($options['name'], ENT_COMPAT).'">';
-		}
-
-		if(!empty($options['priceoptions'])) {
-			$parts[] = '<div class="dcart-item-price dcart-selectlist">';
-
-			$priceoptions = explode(',',$options['priceoptions']);
-			$parts[] = '<select class="item-price-selector" onchange="this.form[\'my-item-price\'].value=this.value;"><option value="0">'.JText::_($options['pricelabel']).'</option>';
-			foreach($priceoptions as $opt) {
-				$parts[] = '<option value="'.htmlentities($opt, ENT_COMPAT).'">$'.$opt.'</option>';
-			}
-			$parts[] = '</select>';
-
-			if($options['editprice']) {
-				$parts[] = '<div class="dcart-item-price dcart-editable">';
-				$parts[] = '<input type="text" name="my-item-price" '.(($options['priceplaceholder'])?'placeholder':'value').'="'.htmlentities($options['price'], ENT_COMPAT).'" class="input-mini">';
-				$parts[] = '</div>';
-			} else {
-				$parts[] = '<input type="hidden" name="my-item-price" value="'.htmlentities($options['price'], ENT_COMPAT).'">';
-			}
-			$parts[] = '</div>';
-		} else {
-			if($options['editprice']) {
-				$parts[] = '<div class="dcart-item-price dcart-editable">';
-				if(!empty($options['pricelabel'])) $parts[] = '<label for="my-item-price" class="">'.JText::_($options['pricelabel']).': </label>';
-				$parts[] = '<input type="text" name="my-item-price" '.(($options['priceplaceholder'])?'placeholder':'value').'="'.htmlentities($options['price'], ENT_COMPAT).'" class="input-mini">';
-				$parts[] = '</div>';
-			} else {
-				if(!$options['hideprice']) {
-					$parts[] = '<div class="dcart-item-price dcart-static">';
-					$parts[] = '<span class="cart-item-amount">$'.$options['price'].'</span>';
-					$parts[] ='</div>';
-				}
-				$parts[] = '<input type="hidden" name="my-item-price" value="'.htmlentities($options['price'], ENT_COMPAT).'">';
-			}
-		}
-
-		if(!empty($options['qtyoptions'])) {
-			$parts[] = '<div class="dcart-item-qty dcart-selectlist">';
-
-			$qtyoptions = explode(',',$options['qtyoptions']);
-			$parts[] = '<select name="item-qty-selector" onchange="this.form[\'my-item-qty\'].value=this.value;"><option value="0">'.JText::_($options['qtylabel']).'</option>';
-			foreach($qtyoptions as $opt) {
-				$parts[] = '<option value="'.htmlentities($opt, ENT_COMPAT).'">$'.$opt.'</option>';
-			}
-			$parts[] = '</select>';
-
-			if($options['editqty']) {
-				$parts[] = '<div class="dcart-item-qty dcart-editable">';
-				$parts[] = '<input type="text" name="my-item-qty" '.(($options['qtyplaceholder'])?'placeholder':'value').'="'.htmlentities($options['qty'], ENT_COMPAT).'" class="input-mini">';
-				$parts[] = '</div>';
-			} else {
-				$parts[] = '<input type="hidden" name="my-item-qty" value="'.htmlentities($options['qty'], ENT_COMPAT).'">';
-			}
-			$parts[] = '</div>';
-		} else {
-			if($options['editqty']) {
-				$parts[] = '<div class="dcart-item-qty dcart-editable">';
-				if(!empty($options['qtylabel'])) $parts[] = '<label for="my-item-qty">'.JText::_($options['qtylabel']).': </label>';
-				$parts[] = '<input type="text" name="my-item-qty" '.(($options['qtyplaceholder'])?'placeholder':'value').'="'.htmlentities($options['qty'], ENT_COMPAT).'" class="input-mini">';
-				$parts[] = '</div>';
-			} else {
-				$parts[] = '<input type="hidden" name="my-item-qty" value="'.htmlentities($options['qty'], ENT_COMPAT).'">';
-			}
-		}
-
-		if($options['url']) {
-			$parts[] = '<input type="hidden" name="my-item-url" value="'.htmlentities($options['url'], ENT_COMPAT).'">';
-		}
-
-		$parts[] = '<div class="dcart-item-add-button">';
-		$parts[] = '<input type="submit" name="my-add-button" class="dcart-add-button" value="'.JText::_($options['submitlabel']).'">';
-		if($options['recurringlabel'] && $this->componentParams->get('allow_recurring_donations',0)==1) {
-			$parts[] = '<input type="button" name="recurring-add-button" class="dcart-add-button dcart-add-recurring" value="'.JText::_($options['recurringlabel']).'">';
-			$parts[] = '<input type="hidden" name="recurring" value="0">';
-		}
-		$parts[] = '</div></div>';
-		$parts[] = '<div class="clear"></div>';
-		$parts[] = '</form>';
-
-		return implode('',$parts);
+		$row = substr_replace($row, $form, $startpos, $endpos-$startpos+1);
+		return true;
 	}
 }

@@ -85,8 +85,10 @@
 # Do not ignore our plugins
 !plugins/
 !plugins/content/
-!plugins/content/donorcart_cart/
-!plugins/content/donorcart_cart/*
+!plugins/content/donorcart/
+!plugins/content/donorcart/*
+!plugins/content/donorcart/tmpl/
+!plugins/content/donorcart/tmpl/*
 !plugins/donorcart/
 !plugins/donorcart/authorizenet/
 !plugins/donorcart/authorizenet/*

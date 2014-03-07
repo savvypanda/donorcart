@@ -33,9 +33,9 @@ if($priceoptions):
 	$priceoptions = array();
 	foreach($optionstrings as $string) {
 		list($value,$text) = explode('=',$string,2);
-		$value = trim($value);
+		$value = htmlspecialchars(trim($value), ENT_COMPAT);
 		$text = trim($text);
-		if(!empty($value) && !empty($text)) $priceoptions[$value] = $text;
+		if(!empty($value) && !empty($text)) $priceoptions[$value] = htmlspecialchars(JText::_($text), ENT_COMPAT);
 	}
 	if(empty($priceoptions)) $priceoptions = false;
 endif;
@@ -45,16 +45,28 @@ if($qtyoptions):
 	$qtyoptions = array();
 	foreach($optionstrings as $string) {
 		list($value,$text) = explode('=',$string,2);
-		$value = trim($value);
+		$value = htmlspecialchars(trim($value), ENT_COMPAT);
 		$text = trim($text);
-		if(!empty($value) && !empty($text)) $qtyoptions[$value] = $text;
+		if(!empty($value) && !empty($text)) $qtyoptions[$value] = htmlspecialchars(JText::_($text), ENT_COMPAT);
 	}
 	if(empty($qtyoptions)) $qtyoptions = false;
+endif;
+$recurringoptions = $params->get('recurringoptions',false);
+if($recurringoptions):
+	$optionstrings = preg_split("/\r\n|\n|\r/", $recurringoptions);
+	$recurringoptions = array();
+	foreach($optionstrings as $string) {
+		list($value,$text) = explode('=',$string,2);
+		$value = htmlspecialchars(trim($value), ENT_COMPAT);
+		$text = trim($text);
+		if(!empty($value) && !empty($text)) $recurringoptions[$value] = htmlspecialchars(JText::_($text), ENT_COMPAT);
+	}
+	if(empty($recurringoptions)) $recurringoptions = false;
 endif;
 ?>
 
 <div class="dcartform <?=$module_suffix?>">
-	<form method="post" action="<?=JRoute::_('index.php')?>" name="dform<?=$unique_form_id?>" class="dcartadd<?=($skipprompt?' dnoprompt':'')?>">
+	<form method="post" action="<?=JRoute::_('index.php')?>" name="dform<?=$unique_form_id?>" class="dcartadd<?=($skipprompt?' dnoprompt':'')?> <?=$module_suffix?>">
 		<?=JHtml::_('form.token')?>
 		<input type="hidden" name="option" value="com_donorcart">
 		<input type="hidden" name="view" value="cart">
@@ -75,8 +87,16 @@ endif;
 
 		<?php if($allowrecurring): ?>
 			<input type="hidden" name="recurring" value="0">
-			<input type="button" class="btn blue fullwidth recurring-option" value="<?=$recurringlabel?>" onclick="set<?=$unique_form_id?>Value('recurring',1,'recurring-option', this)">
-			<input type="button" class="btn blue fullwidth recurring-option" value="Make a single donation" onclick="set<?=$unique_form_id?>Value('recurring',0,'recurring-option', this)">
+			<?php
+				if(!$recurringoptions) $recurringoptions = array('00'=>JText::_('MOD_DONORCART_FORM_ONETIME_DONATION_LABEL'),'1'=>JText::_('MOD_DONORCART_FORM_RECURRING_DONATION_LABEL'));
+				$num_options = count($recurringoptions);
+				$cur_option = 0;
+			?>
+			<div class="recurring-options-outer contains<?=$num_options?>">
+				<?php foreach($recurringoptions as $value => $text): ?>
+					<input type="button" class="btn blue fullwidth recurring-option option-<?=$num_options?>-<?=(++$cur_option)?>" value="<?=$text?>" onclick="set<?=$unique_form_id?>Value('recurring','<?=($value=='00'?0:$value)?>','recurring-option', this)">
+				<?php endforeach; ?>
+			</div>
 		<?php endif; ?>
 
 		<div class="cart-item-form">
@@ -92,13 +112,23 @@ endif;
 			<?php if($editprice): ?>
 				<div class="dcart-item-price dcart-editable">
 					<?php if($pricelabel): ?><label for="<?=$unique_form_id?>-price"><?=$pricelabel?></label><?php endif; ?>
-					<?php foreach($priceoptions as $value => $text): ?>
-						<?php if($value!='00'): ?><input type="button" class="btn blue price-option" value="<?=$text?>" onclick="set<?=$unique_form_id?>Value('my-item-price','<?=$value?>','price-option',this)"><?php endif; ?>
-					<?php endforeach; ?>
-					<?php if(isset($priceoptions['00'])): ?>
-						<div class="btn blue price-option fullwidth" onclick="jQuery('.price-option',document.dform<?=$unique_form_id?>).removeClass('selected');jQuery(this).addClass('selected');document.dform<?=$unique_form_id?>['my-item-price'].focus();">
-							<label for="<?=$unique_form_id?>-price"><?=$priceoptions['00']?></label><input type="text" name="my-item-price" id="<?=$unique_form_id?>-price"<?=($priceplaceholder?' placeholder="'.$priceplaceholder.'"':'')?> value="<?=$price?>">
+					<?php if($priceoptions):
+						$num_options = count($priceoptions);
+						if(isset($priceoptions['00'])) $num_options--;
+						$cur_option = 0;
+						?>
+						<div class="price-options-outer contains<?=$num_options?>">
+							<?php foreach($priceoptions as $value => $text): ?>
+								<?php if($value!='00'): ?><input type="button" class="btn blue price-option option-<?=$num_options?>-<?=(++$cur_option)?>" value="<?=$text?>" onclick="set<?=$unique_form_id?>Value('my-item-price','<?=$value?>','price-option',this)"><?php endif; ?>
+							<?php endforeach; ?>
 						</div>
+						<?php if(isset($priceoptions['00'])): ?>
+							<div class="btn blue price-option custom-price fullwidth" onclick="jQuery('.price-option',document.dform<?=$unique_form_id?>).removeClass('selected');jQuery(this).addClass('selected');document.dform<?=$unique_form_id?>['my-item-price'].focus();">
+								<label for="<?=$unique_form_id?>-price"><?=$priceoptions['00']?></label><input type="text" name="my-item-price" id="<?=$unique_form_id?>-price"<?=($priceplaceholder?' placeholder="'.$priceplaceholder.'"':'')?> value="<?=$price?>">
+							</div>
+						<?php else: ?>
+							<input type="hidden" name="my-item-price" value="<?=$price?>">
+						<?php endif; ?>
 					<?php else: ?>
 						<input type="hidden" name="my-item-price" value="<?=$price?>">
 					<?php endif; ?>

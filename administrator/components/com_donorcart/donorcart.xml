@@ -26,6 +26,7 @@
 		<filename>index.html</filename>
 		<filename>dispatcher.php</filename>
 		<filename>donorcart.php</filename>
+		<filename>includes.php</filename>
 		<folder>controllers</folder>
 		<folder>models</folder>
 		<folder>views</folder>

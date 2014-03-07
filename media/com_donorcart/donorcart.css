@@ -1,6 +1,20 @@
 @charset "utf-8";
 /* CSS Document */
 
+/******************* Helpful classes *******************/
+.clear {
+	clear:both;
+}
+.input-mini {
+	width:60px;
+}
+.input-full {
+	width:auto;
+}
+.fullwidth, input.fullwidth {
+	width:100%;
+}
+
 /******************* Add to cart form styles *******************/
 form.dcartadd {
 	padding: 10px 10px 0 15px;
@@ -60,15 +74,6 @@ div.dcart-editable {
 	position:relative;
 	top:1px;
 	box-shadow: inset 1px 1px 1px #333;
-}
-.clear {
-	clear:both;
-}
-.input-mini {
-	width:60px;
-}
-.input-full {
-	width:auto;
 }
 form.dcartadd.vanilla {
 	padding:0;

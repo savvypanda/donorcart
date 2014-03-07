@@ -54,5 +54,6 @@
 	<files>
 		<filename plugin="donorcart">donorcart.php</filename>
 		<filename>index.html</filename>
+		<folder>tmpl</folder>
 	</files>
 </extension>
