@@ -35,7 +35,7 @@ $locked = in_array($this->item->status,array('submitted','complete'));
 					</td>
 					<td class='dcart-item-price'>
 						<span>$<?=number_format($item->price, 2)?></span>
-							<a class='dcart-remove<?=($locked?' order-locked':'')?>' href='<?=JRoute::_('index.php?option=com_donorcart&task=remove&item='.$id.'&'.JSession::getFormToken().'=1')?>'><?=JText::_('COM_DONORCART_REMOVE_ITEM')?></a>
+							<a class='dcart-remove<?=($locked?' order-locked':'')?>' href='<?=JRoute::_('index.php?option=com_donorcart&task=removeItem&item='.$id.'&'.JSession::getFormToken().'=1')?>'><?=JText::_('COM_DONORCART_REMOVE_ITEM')?></a>
 					</td>
 				</tr>
 			<?php endforeach;

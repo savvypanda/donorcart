@@ -40,6 +40,8 @@
 !administrator/components/com_donorcart/*
 !administrator/components/com_donorcart/helpers/
 !administrator/components/com_donorcart/helpers/*
+!administrator/components/com_donorcart/helpers/tmpl/
+!administrator/components/com_donorcart/helpers/tmpl/*
 !administrator/components/com_donorcart/language/
 !administrator/components/com_donorcart/language/*
 !administrator/components/com_donorcart/language/en-GB/

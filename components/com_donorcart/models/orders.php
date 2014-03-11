@@ -1,7 +1,6 @@
 <?php defined('_JEXEC') or die('Restricted Access');
 
 class DonorcartModelOrders extends FOFModel {
-
 	public function __construct($config = array()) {
 		$user = JFactory::getUser();
 		$session = JFactory::getSession();
@@ -118,7 +117,7 @@ class DonorcartModelOrders extends FOFModel {
 		return parent::onAfterDelete($id);
 	}
 
-	public function createOrder() {
+	public function createOrder($recurring=false, $dedication=false) {
 		$order = $this->getTable();
 		$cartmodel = FOFModel::getAnInstance('carts','DonorcartModel');
 		if(!$cart_id = $cartmodel->getId()) return false;
@@ -129,6 +128,12 @@ class DonorcartModelOrders extends FOFModel {
 		if($user->id) {
 			$data['user_id'] = $user->id;
 			$data['email'] = $user->email;
+		}
+		if($recurring) {
+			$data['recurring_frequency']=$recurring;
+		}
+		if($dedication) {
+			$data['dedication']=$dedication;
 		}
 
 		if(!$order->bind($data) || !$order->store()) {

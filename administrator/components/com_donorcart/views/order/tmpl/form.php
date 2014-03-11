@@ -29,7 +29,7 @@ $editor = JFactory::getEditor();
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_STATUS_LABEL') ?></strong>: <?php echo $this->item->status; ?></p>
 		<?php if($this->item->completed_on): ?><p><strong><?=JText::_('COM_DONORCART_ORDER_COMPLETED_ON_LABEL') ?></strong>: <?php echo $this->item->completed_on; ?></p><?php endif; ?>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_TOTAL_LABEL') ?></strong>: <?php echo $this->item->order_total; ?></p>
-		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_RECURRING_LABEL') ?></strong>: <?php if($this->item->cart_id && is_object($this->item->cart)) echo JText::_(($this->item->cart->recurring)?'COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING':'COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'); ?></p>
+		<p><strong><?= JText::_('COM_DONORCART_ORDER_ORDER_RECURRING_LABEL') ?></strong>: <?php echo JText::_(($this->item->recurring_frequency!="One Time")?'COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING':'COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'); ?></p>
 		<p><strong><?= JText::_('COM_DONORCART_ORDER_SPECIAL_INSTRUCTIONS_LABEL') ?></strong>: <?php echo $this->item->special_instr; ?></p>
 		<?php if($this->item->viewtoken): ?>
 			<p><strong><?= JText::_('COM_DONORCART_ORDER_LINK_LABEL') ?></strong>: <?php echo str_replace('/administrator','',JRoute::_('index.php',true,($params->get('use_ssl',0)==0)?-1:1)).'?option=com_donorcart&view=order&id='.$this->item->donorcart_order_id.'&viewtoken='.$this->item->viewtoken; ?></p>

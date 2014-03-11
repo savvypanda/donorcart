@@ -56,7 +56,7 @@ class DonorcartModelCarts extends FOFModel {
 		return $this->setId($cart->donorcart_cart_id);
 	}
 
-	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '', $img = '', $recurring = false, $from_checkout = false) {
+	public function addItemToCart($sku, $name, $price = '0', $qty = '1', $url = '', $img = '', $from_checkout = false) {
 		if(!$this->id) {
 			if($from_checkout) return false;
 			//if we do not already have a cart, create one and then proceed
@@ -106,7 +106,7 @@ class DonorcartModelCarts extends FOFModel {
 			//$this->record->items[] = $item;
 			$subtotal += $qty * $price;
 		}
-		$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).($recurring?', recurring=1':'').' WHERE donorcart_cart_id='.$this->id;
+		$query = 'UPDATE #__donorcart_carts SET subtotal='.$this->_db->quote($subtotal).' WHERE donorcart_cart_id='.$this->id;
 		$this->_db->setQuery($query);
 		$this->_db->query();
 		//$this->record->subtotal = $subtotal;
@@ -213,7 +213,7 @@ class DonorcartModelCarts extends FOFModel {
 		return true;
 	}
 
-	public function enableRecurring($from_checkout = false) {
+	/* public function enableRecurring($from_checkout = false) {
 		//if we do not already have a cart, calling this function on an empty cart is pointless
 		if(!$this->id) return false;
 
@@ -245,7 +245,7 @@ class DonorcartModelCarts extends FOFModel {
 		$this->_db->setQuery($query);
 		$this->_db->query();
 		return true;
-	}
+	} */
 
 	public function emptyCart() {
 		if(!$this->id) return true;

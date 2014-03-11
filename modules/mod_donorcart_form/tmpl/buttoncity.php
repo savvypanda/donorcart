@@ -86,15 +86,15 @@ endif;
 		<?php endif; ?>
 
 		<?php if($allowrecurring): ?>
-			<input type="hidden" name="recurring" value="0">
+			<input type="hidden" name="recurring" value="">
 			<?php
-				if(!$recurringoptions) $recurringoptions = array('00'=>JText::_('MOD_DONORCART_FORM_ONETIME_DONATION_LABEL'),'1'=>JText::_('MOD_DONORCART_FORM_RECURRING_DONATION_LABEL'));
+				if(!$recurringoptions) $recurringoptions = array('One Time'=>JText::_('MOD_DONORCART_FORM_ONETIME_DONATION_LABEL'),'Monthly'=>JText::_('MOD_DONORCART_FORM_RECURRING_DONATION_LABEL'));
 				$num_options = count($recurringoptions);
 				$cur_option = 0;
 			?>
 			<div class="recurring-options-outer contains<?=$num_options?>">
 				<?php foreach($recurringoptions as $value => $text): ?>
-					<input type="button" class="btn blue fullwidth recurring-option option-<?=$num_options?>-<?=(++$cur_option)?>" value="<?=$text?>" onclick="set<?=$unique_form_id?>Value('recurring','<?=($value=='00'?0:$value)?>','recurring-option', this)">
+					<input type="button" class="btn blue fullwidth recurring-option option-<?=$num_options?>-<?=(++$cur_option)?>" value="<?=$text?>" onclick="set<?=$unique_form_id?>Value('recurring','<?=$value?>','recurring-option', this)">
 				<?php endforeach; ?>
 			</div>
 		<?php endif; ?>

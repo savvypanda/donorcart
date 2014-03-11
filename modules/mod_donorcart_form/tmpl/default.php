@@ -79,8 +79,8 @@ $submitlabel = htmlspecialchars(JText::_($params->get('submitlabel','Donate')), 
 			<div class="dcart-item-add-button">
 				<input type="submit" name="my-add-button" class="dcart-add-button" value="<?=$submitlabel?>">
 				<?php if($allowrecurring): ?>
-					<input type="hidden" name="recurring" value="0">
-					<input type="button" name="recurring-add-button" class="dcart-add-button dcart-add-recurring" value="<?=$recurringlabel?>">
+					<input type="hidden" name="recurring" value="">
+					<input type="button" name="recurring-add-button" class="dcart-add-button dcart-add-recurring" data-val="Monthly" value="<?=$recurringlabel?>">
 				<?php endif; ?>
 			</div>
 		</div>

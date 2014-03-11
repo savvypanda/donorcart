@@ -13,7 +13,7 @@ JHtml::_('behavior.framework');
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_USERID', 'user_id', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_DATE', 'created_on', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_STATUS', 'status', $this->lists->order_Dir, $this->lists->order) ?></th>
-				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_RECURRING', 'recurring', $this->lists->order_Dir, $this->lists->order) ?></th>
+				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_RECURRING', 'recurring_frequency', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_TOTAL', 'order_total', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JHTML::_('grid.sort', 'COM_DONORCART_ORDERS_FIELD_EMAIL', 'email', $this->lists->order_Dir, $this->lists->order) ?></th>
 				<th><?php echo JText::_('COM_DONORCART_ORDERS_FIELD_ITEMS'); ?></th>
@@ -31,7 +31,7 @@ JHtml::_('behavior.framework');
 					</div>
 				</td>
 				<td><?=JHtml::_('select.genericlist', $this->statuslist, 'statusfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->statusfilter)?></td>
-				<td><?=JHtml::_('select.genericlist', array(''=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_SELECTONE'),0=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),1=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurringfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->recurringfilter)?></td>
+				<td><?=JHtml::_('select.genericlist', array(''=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_SELECTONE'),'One Time'=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_ONETIME'),'1'=>JText::_('COM_DONORCART_ORDERS_FIELD_RECURRING_RECURRING')), 'recurringfilter', array('onchange'=>'document.adminForm.submit();'), '', '', $this->recurringfilter)?></td>
 				<td></td>
 				<td><input type="text" name="emailfilter" value="<?=$this->emailfilter?>" onchange="document.adminForm.submit();" /></td>
 				<td><input type="text" name="itemfilter" value="<?=$this->itemfilter?>" onchange="document.adminForm.submit();" /></td>
@@ -55,7 +55,7 @@ JHtml::_('behavior.framework');
 						<td><?=$item->user_id?></td>
 						<td><?=$item->completed_on?$item->completed_on:$item->created_on?></td>
 						<td><?=$item->status?></td>
-						<td><?=(($item->cart_id && is_object($item->cart))?($item->cart->recurring?'Recurring':'One Time'):'')?></td>
+						<td><?=$item->recurring_frequency?></td>
 						<td><?=$item->order_total?></td>
 						<td><?=$item->email?></td>
 						<td><?=(($item->cart_id && is_object($item->cart))?DonorcartHelperFormat::formatItems($item->cart->items):'')?></td>

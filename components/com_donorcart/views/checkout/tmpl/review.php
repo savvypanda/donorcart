@@ -26,7 +26,7 @@ $recurring_flag = $this->params->get('allow_recurring_donations',0);
 	<p><strong>SubTotal</strong>: $<?=number_format($this->item->cart->subtotal,2)?><br /><strong>Order Total</strong>: $<?=number_format($this->item->order_total,2)?></p>
 	<?php if($recurring_flag==1) { ?>
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_RECURRING')?></h3>
-		<div><?=JText::_($this->item->cart->recurring?'COM_DONORCART_CHECKOUT_RECURRING_YES':'COM_DONORCART_CHECKOUT_RECURRING_NO')?></div>
+		<div><?=JText::_('COM_DONORCART_CHECKOUT_RECURRING_'.strtoupper(str_replace(array('-',' '),'_',$this->item->recurring_frequency)))?></div>
 	<?php } ?>
 	<?php if(!$this->user->id && $this->params->get('require_email_for_guest_checkout',false)): ?>
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_GUEST_EMAIL')?></h3>

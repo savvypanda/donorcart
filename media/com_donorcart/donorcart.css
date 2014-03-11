@@ -159,6 +159,14 @@ span.dcart-subtotal {
 	width: auto;
 	font-weight: normal;
 }
+#donorcart_checkout_form div.field {
+	width:100%;
+	clear:both;
+}
+#donorcart_checkout_form div.field.secondary {
+	margin-left:10%;
+	width:90%;
+}
 #donorcart_checkout_form .field.textarea label {
 	float:none;
 	width:auto;

@@ -7,8 +7,8 @@ class DonorcartControllerCarts extends FOFController {
 		$this->registerTask('remove','_remove_item');
 		$this->registerTask('addItem','_add_item');
 		$this->registerTask('empty','_empty_cart');
-		$this->registerTask('setRecurring','_enable_recurring');
-		$this->registerTask('setNoRecurring','_disable_recurring');
+		//$this->registerTask('setRecurring','_enable_recurring');
+		//$this->registerTask('setNoRecurring','_disable_recurring');
 	}
 
 	public function execute($task) {
@@ -53,24 +53,46 @@ class DonorcartControllerCarts extends FOFController {
 		$qty = JRequest::getInt('my-item-qty',1);
 		$url = JRequest::getString('my-item-url','');
 		$img = JRequest::getString('my-item-img','');
-		$recurring = JRequest::getBool('recurring',false);
+		$recurring = JRequest::getString('recurring',false);
+		$dedication = false;
+		$dedication_name = JRequest::getString('dedication_name',false);
+		if($dedication_name) {
+			$dedication_email = JRequest::getString('dedication_email',false);
+			$dedication_note = JRequest::getString('dedication_note',false);
+			$dedication = json_encode(array('name'=>$dedication_name,'email'=>$dedication_email,'note'=>$dedication_note));
+		}
 		if(empty($sku) || empty($name) || empty($price)) {
 			//JError::raiseError(500,'Invalid product.<br />Sku = '.$sku.'<br />Name='.$name.'<br />Price='.$price);
 			JFactory::getApplication()->enqueueMessage('Invalid product.<br />Sku = '.$sku.'<br />Name='.$name.'<br />Price='.$price, 'error');
 		} else {
-			FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($sku, $name, $price, $qty, $url, $img, $recurring);
+			FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($sku, $name, $price, $qty, $url, $img);
+		}
+		if($recurring || $dedication) {
+			$ordermodel = $this->getModel('orders','DonorcartModel');
+			$order_id = $ordermodel->getId();
+			if($order_id) {
+				$db = JFactory::getDbo();
+				$setvals = array();
+				if($recurring) $setvals[] = 'recurring_frequency='.$db->quote($recurring);
+				if($dedication) $setvals[] = ', dedication='.$db->quote($dedication);
+				$query = 'UPDATE #__donorcart_orders SET '.implode(', ',$setvals).' WHERE donorcart_order_id='.$db->quote($order_id);
+				$db->setQuery($query);
+				$db->query();
+			} else {
+				$ordermodel->createOrder($recurring, $dedication);
+			}
 		}
 		return $this->display();
 	}
 
-	public function _enable_recurring() {
+	/* public function _enable_recurring() {
 		FOFModel::getAnInstance('carts','DonorcartModel')->enableRecurring();
 		return $this->display();
 	}
 	public function _disable_recurring() {
 		FOFModel::getAnInstance('carts','DonorcartModel')->disableRecurring();
 		return $this->display();
-	}
+	} */
 
 	public function _empty_cart() {
 		JRequest::checkToken() or JRequest::checkToken('get') or die('Invalid Token');

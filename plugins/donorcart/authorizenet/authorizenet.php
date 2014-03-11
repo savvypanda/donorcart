@@ -4,23 +4,6 @@ require_once(JPATH_SITE.DIRECTORY_SEPARATOR.'administrator'.DIRECTORY_SEPARATOR.
 class plgDonorcartAuthorizenet extends JPluginDonorcart {
 	protected $_name = 'authorizenet';
 
-	function __construct(&$subject, $config) {
-		//require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'anet_php_sdk/AuthorizeNet.php'); //see https://developer.authorize.net/integration/fifteenminutes/#hosted etc.
-		parent::__construct($subject, $config);
-	}
-
-	public function onSubmitOrder($order, $params, $payment_name) {
-		if(!empty($payment_name) && $payment_name != $this->getName()) return;
-		$pay_cc_fee = $this->_handle_processing_fee($order, $payment_name);
-
-		$recurring_frequency = JRequest::getString($this->getName().'_payment_frequency','One Time');
-		$infohash = array('payment_frequency'=>$recurring_frequency, 'pay_cc_fee'=>$pay_cc_fee);
-		return array(
-			'payment_type' => $payment_name,
-			'infohash' => json_encode($infohash)
-		);
-	}
-
 	public function onBeforePostback($plugin_validated) {
 		if($plugin_validated || !$this->isActive()) return;
 		$md5_hash = JRequest::getString('x_MD5_Hash','');

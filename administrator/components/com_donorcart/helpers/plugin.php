@@ -69,10 +69,49 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	public function onDisplayPaymentForm($order, $params) {
 		if(!$this->isActive()) return;
-		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), 'paymentform');
+		$path = $this->_get_template_path('paymentform');
+		$contents='';
+		if($path) {
+			ob_start();
+			include $path;
+			$contents = ob_get_clean();
+		}
+		return $contents;
+	}
+
+	/*
+	 * Displays the recurring options selector and details
+	 *
+	 * @param Object $order The donorcartModelOrders object containing the current order
+	 * @param Object $params The com_donorcart JParams object
+	 *
+	 * @return string The HTML for the recurring options
+	 */
+	public function onDisplayRecurringOptions($order, $params) {
+		if(!$this->isActive()) return;
+		$path = $this->_get_template_path('recurringoptions');
 		$contents = '';
-		if(file_exists($path)) {
-			$this->loadLanguage();
+		if($path) {
+			ob_start();
+			include $path;
+			$contents = ob_get_clean();
+		}
+		return $contents;
+	}
+
+	/*
+	 * Displays the payment fees form elements
+	 *
+	 * @param Object $order The donorcartModelOrders object containing the current order
+	 * @param Object $params The com_donorcart JParams object
+	 *
+	 * @return string The HTML for the payment fees elements
+	 */
+	public function onDisplayPaymentFees($order, $params) {
+		if(!$this->isActive()) return;
+		$path = $this->_get_template_path('paymentfees');
+		$contents = '';
+		if($path) {
 			ob_start();
 			include $path;
 			$contents = ob_get_clean();
@@ -106,25 +145,15 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	public function onSubmitOrder($order, $params, $payment_name) {
 		if(!empty($payment_name) && $payment_name != $this->getName()) return;
-		die('You must define the onSubmitOrder function in your plugin.');
 
-		//example code for this function
-		$form_was_filled_out_correctly = true;
-		if(!$form_was_filled_out_correctly) return false;
+		$pay_cc_fee = $this->_handle_processing_fee($order, $payment_name);
+		$recurring_frequency = JRequest::getBool('recurring',false)?JRequest::getString($this->getName().'_payment_frequency','One Time'):'One Time';
 
-		$payment_name = $this->getName();
-
-		$data = array(
-			'status' => 'pending',
-			'val1' => 'myval',
-			'val2' => 'myval2',
-			'etc...'
+		$infohash = array('payment_frequency'=>$recurring_frequency, 'pay_cc_fee'=>$pay_cc_fee);
+		return array(
+			'payment_type' => $payment_name,
+			'infohash' => json_encode($infohash)
 		);
-		$payment = array(
-			'infohash' => json_encode($data)
-		);
-
-		return $payment;
 	}
 
 	/*
@@ -140,11 +169,9 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	public function onConfirmOrder($order, $params, $is_valid) {
 		if(!is_valid || $order->payment_name != $this->getName()) return;
-
-		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), 'submitform');
+		$path = $this->_get_template_path('submitform');
 		$contents = '';
-		if(file_exists($path)) {
-			$this->loadLanguage();
+		if($path) {
 			ob_start();
 			include $path;
 			$contents = ob_get_clean();
@@ -163,11 +190,9 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	public function onDisplayPaymentInfo($order, $params, $payment_name) {
 		if($payment_name != $this->getName()) return;
-
-		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), 'paymentinfo');
+		$path = $this->_get_template_path('paymentinfo');
 		$contents = '';
-		if(file_exists($path)) {
-			$this->loadLanguage();
+		if($path) {
 			ob_start();
 			include $path;
 			$contents = ob_get_clean();
@@ -246,35 +271,29 @@ class JPluginDonorcart extends JPlugin {
 	/*
 	 * This function is called when an order is completed
 	 *
-	 * @param DonorcartModelOrders order The order that was completed
+	 * @param DonorcartModelOrders $order The order that was completed
 	 */
 	public function onOrderCompletion($order) {
 		return;
 	}
 
 	/*
-	 * Outputs a form to include the credit card processing fee
+	 * Returns the path to the specified plugin template file.
+	 * If the payment plugin does not have a plugin-specific template file, returns the default file location
+	 * If the file exists, loads the language strings for the current plugin
 	 *
-	 * @param DonorcartModelOrders order The order we are displaying the payment form for
-	 * @param boolean cc_fee_selected True if the user has already elected to pay the processing fee
+	 * @param string $tpl The template file (layout) to search for
+	 *
+	 * @returns string|bool The path to the template file, or false if no file exists for the requested layout
 	 */
-	protected function _display_processing_fee_form($order, $cc_fee_selected = false) {
-		$cc_fee_option = $this->params->get('pay_cc_fee');
-		$cc_fee_type = $this->params->get('cc_fee_type','percent');
-		$cc_fee_amount = $this->params->get('cc_fee_amount',0);
-		$cc_fee_total = $this->_calc_cc_processing_fee($order);
-		if(!is_numeric($cc_fee_amount)) {
-			$cc_fee_amount = 0;
-		} else {
-			$cc_fee_amount = round($cc_fee_amount,2);
+	public function _get_template_path($tpl) {
+		$path = JPluginHelper::getLayoutPath('donorcart', $this->getName(), $tpl);
+		if(!file_exists($path)) {
+			$path = dirname(__FILE__).DIRECTORY_SEPARATOR.'tmpl'.DIRECTORY_SEPARATOR.$tpl.'.php';
+			if(!file_exists($path)) return false;
 		}
-
-		if($cc_fee_option==1 && $cc_fee_total > 0) {
-			$cc_fee_text = $cc_fee_type=='percent'?JText::sprintf('PLG_DONORCART_'.strtoupper($this->getName()).'_PAY_CC_FEE_PERCENT',$cc_fee_amount, $cc_fee_total):JText::sprintf('PLG_DONORCART_'.strtoupper($this->getName()).'_PAY_CC_FEE_FIXED',$cc_fee_total); ?>
-			<div class="field checkbox"><input type="checkbox" name="<?=$this->getName()?>_pay_cc_fee" id="<?=$this->getName()?>-pay-cc-fee-option"<?=($cc_fee_selected?' checked="checked"':'')?> value="1"><label for="<?=$this->getName()?>-pay-cc-fee-option"><?=$cc_fee_text?></label></div>
-		<?php } elseif($cc_fee_option==2 && $cc_fee_total > 0) { ?>
-			<p><small><em>Your donation will include a <?=($cc_fee_type=='percent'?$cc_fee_amount.'% ($'.number_format($cc_fee_total,2).')':'$'.number_format($cc_fee_total,2))?> credit card processing fee.</em></small></p>
-		<?php }
+		$this->loadLanguage();
+		return $path;
 	}
 
 	/*
@@ -306,7 +325,7 @@ class JPluginDonorcart extends JPlugin {
 		if($pay_cc_fees) {
 			$cc_fees_total = $this->_calc_cc_processing_fee($order);
 			if(!$current_fee_item) {
-				FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($this->_cc_fees_sku, $this->_cc_fees_name, $cc_fees_total, '1', '', '', false, true);
+				FOFModel::getAnInstance('carts','DonorcartModel')->addItemToCart($this->_cc_fees_sku, $this->_cc_fees_name, $cc_fees_total, '1', '', '', true);
 				$order_modified = true;
 			} elseif($order->cart->items[$current_fee_item]->price != $cc_fees_total) {
 				FOFModel::getAnInstance('carts','DonorcartModel')->updateItemInCart($current_fee_item, null, null, $cc_fees_total, '1', null, null, true);
@@ -354,13 +373,13 @@ class JPluginDonorcart extends JPlugin {
 	 */
 	private function _get_recurring_options() {
 		$recurring_options = array();
-		if($this->params->get('recur_twoweeks',false)) $recurring_options['2 Weeks'] = '2 Weeks';
-		if($this->params->get('recur_weekly',false)) $recurring_options['Weekly'] = 'Weekly';
-		if($this->params->get('recur_fourweeks',false)) $recurring_options['4 Weeks'] = '4 Weeks';
-		if($this->params->get('recur_monthly',false)) $recurring_options['Monthly'] = 'Monthly';
-		if($this->params->get('recur_querterly',false)) $recurring_options['Querterly'] = 'Querterly';
-		if($this->params->get('recur_semiannual',false)) $recurring_options['Semi-Annual'] = 'Semi-Annual';
-		if($this->params->get('recur_yearly',false)) $recurring_options['Yearly'] = 'Yearly';
+		if($this->params->get('recur_twoweeks',false)) $recurring_options[] = '2 Weeks';
+		if($this->params->get('recur_weekly',false)) $recurring_options[] = 'Weekly';
+		if($this->params->get('recur_fourweeks',false)) $recurring_options[] = '4 Weeks';
+		if($this->params->get('recur_monthly',false)) $recurring_options[] = 'Monthly';
+		if($this->params->get('recur_quarterly',false)) $recurring_options[] = 'Quarterly';
+		if($this->params->get('recur_semiannual',false)) $recurring_options[] = 'Semi-Annual';
+		if($this->params->get('recur_yearly',false)) $recurring_options[] = 'Yearly';
 		return $recurring_options;
 	}
 }

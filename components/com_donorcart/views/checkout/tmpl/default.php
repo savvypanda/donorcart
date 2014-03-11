@@ -5,10 +5,10 @@ $display_cart = isset($this->display_cart)?$this->display_cart:($this->params->g
 $login_option = $this->params->get('login_option',1);
 ?>
 <div id="donorcart_checkout_container">
-	<?php if($display_cart): //Display the cart if we are supposed to ?>
+	<?php /* if($display_cart): //Display the cart if we are supposed to ?>
 		<h3><?=JText::_('COM_DONORCART_CHECKOUT_HEADING_CART')?></h3>
 		<?php echo $this->loadTemplate('cart');
-	endif;
+	endif; */
 
 	if($this->user->id) {
 		?>

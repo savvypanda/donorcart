@@ -49,8 +49,11 @@ class DonorcartModelOrders extends FOFModel {
 			$query->where('o.status='.$this->_db->quote($statusfilter));
 		}
 		if($recurringfilter = $this->getState('recurringfilter')) {
-			$query->innerJoin('#__donorcart_carts c ON o.cart_id = c.donorcart_cart_id');
-			$query->where('c.recurring='.$this->_db->quote($recurringfilter));
+			if($recurringfilter=='1') {
+				$query->where('o.recurring_frequency<>"One Time"');
+			} else {
+				$query->where('o.recurring_frequency='.$this->_db->quote($recurringfilter));
+			}
 		}
 		if($itemfilter = $this->getState('itemfilter')) {
 			$query->innerJoin('#__donorcart_cart_items i ON o.cart_id = i.cart_id');

@@ -99,8 +99,8 @@ $unique_form_id = uniqid();
 		<div class="dcart-item-add-button">
 			<input type="submit" name="my-add-button" class="dcart-add-button" value="<?=JText::_($options['submitlabel'])?>">
 			<?php if($options['recurringlabel'] && $this->componentParams->get('allow_recurring_donations',0)==1): ?>
-				<input type="button" name="recurring-add-button" class="dcart-add-button dcart-add-recurring" value="<?=JText::_($options['recurringlabel'])?>">
-				<input type="hidden" name="recurring" value="0">
+				<input type="button" name="recurring-add-button" class="dcart-add-button dcart-add-recurring" data-val="Monthly" value="<?=JText::_($options['recurringlabel'])?>">
+				<input type="hidden" name="recurring" value="">
 			<?php endif; ?>
 		</div>
 	</div>

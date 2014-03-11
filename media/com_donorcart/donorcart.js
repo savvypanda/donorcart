@@ -63,7 +63,6 @@
 		}
 	}
 
-
 	$(document).ready(function() {
 		var account_options = $('#donorcart_checkout_container input[type=radio][name=account_option]');
 		if(account_options.length) {
@@ -97,9 +96,21 @@
 		$('input[type=radio][name=shipto_id],input[type=radio][name=billto_id]').change(togglenewaddress).not(':checked').parent().find('.optiondrawer').slideUp();
 
 		function changepaymentmethod(newmethod) {
-			$('.dcart_payment_method_form').slideUp().hasClass(newmethod).slideDown();
+			$('#donorcart_checkout_form .method-dependent').hide().filter('.show-'+newmethod).show();
 		}
-		$('#donorcart_checkout_form input[name=payment_method]').change(function(){changepaymentmethod($(this).val())});
+		$('#donorcart_checkout_form input[name=payment_method]').change(function(){changepaymentmethod($(this).val())}).change();
+
+		function togglerecurring() {
+			$('#donorcart_checkout_form .show-recurring')[$('#dcart-checkbox-recurring').is(':checked')?'slideDown':'slideUp']("medium");
+		}
+		$("#dcart-checkbox-recurring").change(togglerecurring).change();
+
+		function togglededication() {
+			$('#donorcart_checkout_form .show-dedicate')[$('#dcart-checkbox-dedicate').is(':checked')?'slideDown':'slideUp']("medium");
+		}
+		$('#dcart-checkbox-dedicate').change(togglededication).change();
+
+		$('#dcart-order-show-details-link').click(function(){$('#dcart-order-details-container').toggle("medium")});
 
 		$(document).delegate('a.order-locked', 'click', function(e) {
 			e.stopImmediatePropagation();
@@ -140,7 +151,7 @@
 			return false;
 		});
 		$('form.dcartadd input[name=recurring-add-button]').click(function(){
-			this.form.recurring=1;
+			this.form['recurring'].value=$(this).attr('data-val');
 			$(this.form).submit();
 			return false;
 		});

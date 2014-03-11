@@ -9,11 +9,12 @@ $recurring_options = (($allow_recurring_donations==1)?1:0) + count($this->_get_r
 
 ?>
 <p><strong>Payment Amount</strong>: <?=$order->order_total?>
-	<?php if($payment_info['pay_cc_fees'] && $this->params->get('cc_fees_option',1)==1): ?><br /><strong>Pay CC Fees?</strong>: <?=$payment_info['pay_cc_fees']?'Yes':'No'?><?php endif;
+	<br /><strong>Payment Type</strong>: <?=JText::_('PLG_DONORCART_'.strtoupper($this->getName()).'_PAYMENT_SELECTOR_NAME')?><?php
+	if($payment_info['pay_cc_fees'] && $this->params->get('cc_fees_option',1)==1): ?><br /><strong>Pay CC Fees?</strong>: <?=$payment_info['pay_cc_fees']?'Yes':'No'?><?php endif;
 	if($recurring_options > 1 && ($payment_info['selFrequency'])): ?><br /><strong>Payment Frequency</strong>: <?=$payment_info['selFrequency']; ?><?php endif;
 	if(isset($payment_info['paytype'])):
-		if($payment_info['paytype']=='EFT') { ?><br /><strong>Payment Type</strong>: EFT<?php }
-		elseif($payment_info['paytype']=='CC') { ?><br /><strong>Payment Type</strong>: Credit/Debit<?php }
+		if($payment_info['paytype']=='EFT') { ?><br /><strong>Payment Method</strong>: EFT<?php }
+		elseif($payment_info['paytype']=='CC') { ?><br /><strong>Payment Method</strong>: Credit/Debit<?php }
 	endif;
 	if(isset($payment_info['name_on_account']) && !empty($payment_info['name_on_account'])): ?><br /><strong>Name on Account</strong>: <?=$payment_info['name_on_account']?><?php endif;
 	if(isset($payment_info['lastfour']) && !empty($payment_info['lastfour'])): ?><br /><strong>Last 4 Digits of Account</strong>: <?=$payment_info['lastfour']?><?php endif;

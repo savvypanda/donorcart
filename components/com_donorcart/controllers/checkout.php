@@ -11,7 +11,7 @@ class DonorcartControllerCheckout extends FOFController {
 		$this->registerTask('logout','_logout');
 		$this->registerTask('register','_register');
 
-		$this->registerTask('remove','_remove_item');
+		$this->registerTask('removeItem','_remove_item');
 		$this->registerTask('emptyCart','_empty_cart');
 		$this->registerTask('resetOrder','_reset_order');
 		$this->registerTask('setRecurring','_enable_recurring');
@@ -290,28 +290,7 @@ class DonorcartControllerCheckout extends FOFController {
 			$is_valid = false;
 		}
 
-		// ************************************
-		//Step 2: Record the recurring options and special instructions
-		switch($this->params->get('allow_recurring_donations',0)){
-			case 1: //the user can decide if they want their donation to be recurring
-				$recurring = (int) JRequest::getBool('recurring',false);
-				break;
-			case 2: //all donations are recurring
-				$recurring = 1;
-				break;
-			default: //all donations are one-time
-				$recurring = 0;
-				break;
-		}
-		if($recurring != $order->cart->recurring) {
-			$db = JFactory::getDbo();
-			$db->setQuery('UPDATE #__donorcart_carts SET recurring='.$recurring.' WHERE donorcart_cart_id='.$order->cart->donorcart_cart_id);
-			$db->query();
-			$order->cart->recurring = $recurring;
-		}
-		$orderdata['special_instr'] = JRequest::getString('special_instr','');
-
-		//Step 3: save the addresses (if present)
+		//Step 2: save the addresses (if present)
 		//first we need to include some logic to determine:
 		//A) If there is an address at all on the order
 		//B) If we are saving new addresses
@@ -377,6 +356,44 @@ class DonorcartControllerCheckout extends FOFController {
 		$orderdata['billing_address_id']=$billto_id;
 
 
+		// ************************************
+		//Step 3: Record the recurring options, dedication, and special instructions
+		$payment_name = JRequest::getVar('payment_method','');
+		if($this->params->get('allow_recurring_donations',0)==0 || !JRequest::getBool('recurring',false)) {
+			$orderdata['recurring_frequency'] = 'One Time';
+		} else {
+			$recurring_field = $payment_name.'_payment_frequency';
+			$orderdata['recurring_frequency'] = JRequest::getString($recurring_field,'One Time');
+		}
+		/* switch($this->params->get('allow_recurring_donations',0)){
+			case 1: //the user can decide if they want their donation to be recurring
+				$recurring = (int) JRequest::getBool('recurring',false);
+				break;
+			case 2: //all donations are recurring
+				$recurring = 1;
+				break;
+			default: //all donations are one-time
+				$recurring = 'One Time';
+				break;
+		} */
+		/* if($recurring != $order->cart->recurring) {
+			$db = JFactory::getDbo();
+			$db->setQuery('UPDATE #__donorcart_carts SET recurring='.$recurring.' WHERE donorcart_cart_id='.$order->cart->donorcart_cart_id);
+			$db->query();
+			$order->cart->recurring = $recurring;
+		} */
+		if($this->params->get('allow_dedication_option',1) && ($dedicated = JRequest::getBool('dedicate',false))) {
+			$orderdata['dedication'] = json_encode(array(
+				'name' => JRequest::getString('dedication_name',''),
+				'email' => JRequest::getString('dedication_email',''),
+				'text' => JRequest::getString('dedication_text','')
+			));
+		} else {
+			$orderdata['dedication']='';
+		}
+		$orderdata['special_instr'] = JRequest::getString('special_instr','');
+
+
 		//Step 4: save the payment details (save and refresh the order first, so the payment plugins have the most recent data to work with)
 		$ordermodel->save($orderdata);
 		$order = $ordermodel->setId($order_id)->getItem();
@@ -384,7 +401,6 @@ class DonorcartControllerCheckout extends FOFController {
 
 		JPluginHelper::importPlugin('donorcart');
 		$dispatcher = JDispatcher::getInstance();
-		$payment_name = JRequest::getVar('payment_method','');
 		$payment_details = false;
 		$results = $dispatcher->trigger('onSubmitOrder', array($order, $this->params, &$payment_name));
 		foreach($results as $result) {
